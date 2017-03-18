@@ -313,3 +313,6 @@ TSWLatexianTemp*
 
 # expex forward references with \gathertags
 *-tags.tex
+
+# Glove vectors
+src/resources/glove

@@ -17,24 +17,28 @@ def dir_creator(dirs_list):
 
 
 def extract_zip(file, ext_dir):
+    """
+    Extracts the zip file to a chosen directroy
+    :param file: Zip file path
+    :param ext_dir: Extraction directory
+    :return:
+    """
     print("Extracting", file, "to", ext_dir)
     with zipfile.ZipFile(file, "r") as zip_ref:
         zip_ref.extractall(ext_dir)
     print("Extraction finished!\n")
 
-    # Cleanup
-    try:
-        os.remove(file)
-    except Exception as e:
-        print("Could not delete file", file, e)
-
 
 def download_data(download_dir="/tmp"):
     """
-    Downloads datasets and resources required for the project
+    Downloads the dataset and resources required for the project.
     :return:
     """
-    dir_creator([constants.DATA, constants.RSC])
+    glove_dir = os.path.join(constants.RSC, "glove")
+    tf_weights = os.path.join(constants.RSC, "tf_weights")
+
+    dir_creator(
+        [constants.DATA, constants.RSC, glove_dir, tf_weights])
 
     # glove
     glove_name = os.path.join(download_dir, "glove.zip")
@@ -44,7 +48,7 @@ def download_data(download_dir="/tmp"):
         wget.download(constants.GLOVE_TWITTER, glove_name)
         print("Downloaded to", glove_name, "\n")
 
-    extract_zip(glove_name, constants.RSC)
+    extract_zip(glove_name, glove_dir)
 
     # Dataset
     print("Downloading dataset")
@@ -57,3 +61,5 @@ def download_data(download_dir="/tmp"):
             wget.download(link, file)
 
         extract_zip(file, constants.DATA)
+
+    # TODO Add trained weights download

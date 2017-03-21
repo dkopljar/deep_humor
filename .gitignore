@@ -94,7 +94,8 @@ ENV/
 .ropeproject
 *.idea/
 
-data/
+# Ignore data-sets
+src/data/
 
 ## Core latex/pdflatex auxiliary files:
 *.aux
@@ -315,4 +316,4 @@ TSWLatexianTemp*
 *-tags.tex
 
 # Glove vectors
-src/resources/glove
+src/resources/

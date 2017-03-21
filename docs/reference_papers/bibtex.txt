@@ -1,0 +1,6 @@
+@article{potash2016hashtagwars,
+  title={\# HashtagWars: Learning a Sense of Humor},
+  author={Potash, Peter and Romanov, Alexey and Rumshisky, Anna},
+  journal={arXiv preprint arXiv:1612.03216},
+  year={2016}
+}

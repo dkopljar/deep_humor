@@ -4,3 +4,20 @@
   journal={arXiv preprint arXiv:1612.03216},
   year={2016}
 }
+
+@inproceedings{bertero2016long,
+  title={A long short-term memory framework for predicting humor in dialogues},
+  author={Bertero, Dario and Fung, Pascale},
+  booktitle={Proceedings of NAACL-HLT},
+  pages={130--135},
+  year={2016}
+}
+
+@inproceedings{raz2012automatic,
+  title={Automatic humor classification on Twitter},
+  author={Raz, Yishay},
+  booktitle={Proceedings of the 2012 Conference of the North American Chapter of the Association for Computational Linguistics: Human Language Technologies: Student Research Workshop},
+  pages={66--70},
+  year={2012},
+  organization={Association for Computational Linguistics}
+}

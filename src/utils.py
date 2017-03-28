@@ -32,6 +32,7 @@ def extract_zip(file, ext_dir):
 def download_data(download_dir="/tmp"):
     """
     Downloads the dataset and resources required for the project.
+    NOTE: You should have at least 5GB of disk space available.
     :return:
     """
     glove_dir = os.path.join(constants.RSC, "glove")
@@ -40,14 +41,13 @@ def download_data(download_dir="/tmp"):
     dir_creator(
         [constants.DATA, constants.RSC, glove_dir, tf_weights])
 
-    # glove
+    # Twitter glove vectors
     glove_name = os.path.join(download_dir, "glove.zip")
     if not os.path.exists(glove_name):
         print("Downloading Twitter Glove vector from", constants.GLOVE_TWITTER)
         print("This may take a while because the file size is 1.4GB")
         wget.download(constants.GLOVE_TWITTER, glove_name)
         print("Downloaded to", glove_name, "\n")
-
     extract_zip(glove_name, glove_dir)
 
     # Dataset
@@ -62,4 +62,4 @@ def download_data(download_dir="/tmp"):
 
         extract_zip(file, constants.DATA)
 
-    # TODO Add trained weights download
+        # TODO Add trained weights download

@@ -2,6 +2,56 @@ import os
 import zipfile
 import constants
 import wget
+import numpy as np
+from sklearn.metrics import accuracy_score, f1_score, recall_score, \
+    precision_score
+import configparser
+
+
+def calc_metric(y_trues, y_preds):
+    """
+    Calculates accuracy, macro preicision, recall and f1 scores
+    :param y_true: Batch of true labels
+    :param y_pred: Batch of predicted labels
+    :return:
+    """
+    assert len(y_trues) == len(y_preds)
+
+    acc, prec, rec, f1, dim = 0, 0, 0, 0, y_trues.shape[0]
+    for y_true, y_pred in zip(y_trues, y_preds):
+        acc += accuracy_score(y_true, y_pred)
+        prec += precision_score(y_true, y_pred, average="macro")
+        rec += recall_score(y_true, y_pred, average="macro")
+        f1 += f1_score(y_true, y_pred, average="macro")
+
+    return acc / dim, prec / dim, rec / dim, f1 / dim
+
+
+def read_config(config_file):
+    """
+    Reads the configuration file and creates a dictionary
+    :param config_file: Ini file path
+    :return:
+    """
+    config = configparser.ConfigParser()
+    config.read(config_file)
+    conf_dict = dict()
+
+    conf_dict['lr'] = float(config["MODEL"]['learning rate'])
+    conf_dict['optimizer'] = config["MODEL"]['optimizer']
+    conf_dict['timestep'] = int(config["MODEL"]['timestep'])
+    conf_dict['word_vector_dim'] = int(
+        config["MODEL"]['word embedding dimension'])
+    conf_dict['char_embeddings_dim'] = int(
+        config["MODEL"]['character embeddings dimension'])
+    conf_dict['max_word_size'] = int(config["MODEL"]['max word length'])
+    conf_dict['filter_dim'] = int(config["MODEL"]['cnn filter dimension'])
+    conf_dict['lstm_hidden'] = int(config["MODEL"]['lstm hidden state dim'])
+    conf_dict['batch_size'] = int(config["MODEL"]['batch size'])
+    conf_dict['domain'] = config["GENERAL"]['domain']
+    conf_dict['train_epochs'] = int(config["GENERAL"]['training epochs'])
+
+    return conf_dict
 
 
 def dir_creator(dirs_list):
@@ -63,3 +113,35 @@ def download_data(download_dir="/tmp"):
         extract_zip(file, constants.DATA)
 
         # TODO Add trained weights download
+
+
+def shuffle_data(input, labels):
+    indices = np.arange(len(input))
+    np.random.shuffle(indices)
+    return input[indices], labels[indices]
+
+
+def split_data(input, labels, test_size=0.4):
+    """
+    Split the dataset to training, development and test datasets.
+    Test set is always half the size of the validation set
+    :param chr_embds:
+    :param treebank:
+    :param pos_tags:
+    :param test_size: Validation + test set size
+    :return: (train_input, valid_input, test_input, train_labels, valid_labels,
+     test_labels)
+    """
+    # Training set
+    ts = int((1 - test_size) * input.shape[0])
+    train_word, tmp_word = input[:ts], input[ts:]
+    train_label, tmp_label = labels[:ts], labels[ts:]
+
+    # Validation + test set
+    tss = int(0.5 * train_word.shape[0])
+
+    valid_word, test_word = tmp_word[:tss], tmp_word[tss:]
+    valid_label, test_label = tmp_label[:tss], tmp_label[tss:]
+
+    return train_word, valid_word, test_word, \
+           train_label, valid_label, test_label

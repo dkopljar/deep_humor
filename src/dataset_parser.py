@@ -28,7 +28,10 @@ def combinantorial(lst):
         for element2 in lst[index:]:
             if element1[2] == element2[2]:
                 continue
-            pairs.append((element1, element2))
+            if element1[2] < element2[2]:
+                pairs.append((element1, element2))
+            else:
+                pairs.append((element2, element1))
         index += 1
     return pairs
 

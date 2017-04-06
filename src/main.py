@@ -31,6 +31,9 @@ def main(config):
 
     net = models.LSTM(config)
 
+    # Evaluate on the TEST set
+    # net.eval(test_input, test_label)
+
 
 if __name__ == "__main__":
     seed = 1337

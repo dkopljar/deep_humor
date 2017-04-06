@@ -10,6 +10,10 @@ import utils
 
 class Net:
     def setup(self):
+        """
+        Sets up the
+        :return:
+        """
         raise NotImplementedError
 
     def load_model(self, model_path):
@@ -24,14 +28,16 @@ class Net:
 
     def train(self):
         """
-        Sets up the model training
+        Sets up the model training and runs training.
         :return:
         """
         raise NotImplementedError
 
-    def eval(self):
+    def eval(self, input, labels):
         """
-        Evalutates the model on the development set.
+        Evalutates the model using Accuracy, Precision, Recall and F1 metrics.
+        :param input: Input of shape [batch_size, timestep, vector_dim]
+        :param
         :return:
         """
         raise NotImplementedError
@@ -294,15 +300,15 @@ class LSTM(Net):
                                   global_step=self.global_step)
                 logging.info("Model saved at: " + str(path))
 
-    def eval(self):
+    def eval(self, input, labels):
         logging.info("Evaluating on the validation set...")
         # char, word, label = utils.shuffle_data(char, word, label)
-        num_batches = self.train_word.shape[0] // self.batch_size
+        num_batches = input.shape[0] // self.batch_size
         acc, prec, rec, f1 = 0, 0, 0, 0
         for b in range(num_batches):
-            word_b = self.valid_word[
+            word_b = input[
                      b * self.batch_size:(b + 1) * self.batch_size]
-            label_b = self.valid_label[
+            label_b = labels[
                       b * self.batch_size:(b + 1) * self.batch_size]
             loss, pred = self.sess.run(
                 [self.loss, self.softmax],

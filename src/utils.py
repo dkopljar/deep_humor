@@ -2,6 +2,7 @@ import os
 import zipfile
 import constants
 import wget
+import numpy as np
 from sklearn.metrics import accuracy_score, f1_score, recall_score, \
     precision_score
 import configparser
@@ -112,3 +113,35 @@ def download_data(download_dir="/tmp"):
         extract_zip(file, constants.DATA)
 
         # TODO Add trained weights download
+
+
+def shuffle_data(input, labels):
+    indices = np.arange(len(input))
+    np.random.shuffle(indices)
+    return input[indices], labels[indices]
+
+
+def split_data(input, labels, test_size=0.4):
+    """
+    Split the dataset to training, development and test datasets.
+    Test set is always half the size of the validation set
+    :param chr_embds:
+    :param treebank:
+    :param pos_tags:
+    :param test_size: Validation + test set size
+    :return: (train_input, valid_input, test_input, train_labels, valid_labels,
+     test_labels)
+    """
+    # Training set
+    ts = int((1 - test_size) * input.shape[0])
+    train_word, tmp_word = input[:ts], input[ts:]
+    train_label, tmp_label = labels[:ts], labels[ts:]
+
+    # Validation + test set
+    tss = int(0.5 * train_word.shape[0])
+
+    valid_word, test_word = tmp_word[:tss], tmp_word[tss:]
+    valid_label, test_label = tmp_label[:tss], tmp_label[tss:]
+
+    return train_word, valid_word, test_word, \
+           train_label, valid_label, test_label

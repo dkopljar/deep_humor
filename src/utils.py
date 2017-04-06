@@ -2,6 +2,55 @@ import os
 import zipfile
 import constants
 import wget
+from sklearn.metrics import accuracy_score, f1_score, recall_score, \
+    precision_score
+import configparser
+
+
+def calc_metric(y_trues, y_preds):
+    """
+    Calculates accuracy, macro preicision, recall and f1 scores
+    :param y_true: Batch of true labels
+    :param y_pred: Batch of predicted labels
+    :return:
+    """
+    assert len(y_trues) == len(y_preds)
+
+    acc, prec, rec, f1, dim = 0, 0, 0, 0, y_trues.shape[0]
+    for y_true, y_pred in zip(y_trues, y_preds):
+        acc += accuracy_score(y_true, y_pred)
+        prec += precision_score(y_true, y_pred, average="macro")
+        rec += recall_score(y_true, y_pred, average="macro")
+        f1 += f1_score(y_true, y_pred, average="macro")
+
+    return acc / dim, prec / dim, rec / dim, f1 / dim
+
+
+def read_config(config_file):
+    """
+    Reads the configuration file and creates a dictionary
+    :param config_file: Ini file path
+    :return:
+    """
+    config = configparser.ConfigParser()
+    config.read(config_file)
+    conf_dict = dict()
+
+    conf_dict['lr'] = float(config["MODEL"]['learning rate'])
+    conf_dict['optimizer'] = config["MODEL"]['optimizer']
+    conf_dict['timestep'] = int(config["MODEL"]['timestep'])
+    conf_dict['word_vector_dim'] = int(
+        config["MODEL"]['word embedding dimension'])
+    conf_dict['char_embeddings_dim'] = int(
+        config["MODEL"]['character embeddings dimension'])
+    conf_dict['max_word_size'] = int(config["MODEL"]['max word length'])
+    conf_dict['filter_dim'] = int(config["MODEL"]['cnn filter dimension'])
+    conf_dict['lstm_hidden'] = int(config["MODEL"]['lstm hidden state dim'])
+    conf_dict['batch_size'] = int(config["MODEL"]['batch size'])
+    conf_dict['domain'] = config["GENERAL"]['domain']
+    conf_dict['train_epochs'] = int(config["GENERAL"]['training epochs'])
+
+    return conf_dict
 
 
 def dir_creator(dirs_list):

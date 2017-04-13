@@ -6,6 +6,7 @@ import tensorflow as tf
 from tensorflow.contrib import rnn
 
 import utils
+import pdb
 
 
 class Net:
@@ -207,11 +208,10 @@ class LSTM(Net):
         Word embeddings input of size (batch_size, timestep, word_embed_dim)
         """
         self.word_embedding_input = tf.placeholder(tf.float32,
-                                                   (None, self.timestep,
-                                                    self.word_embd_vec))
+                                                   (None, self.word_embd_vec,
+                                                    self.timestep))
         # POS tags encoded in one-hot fashion (batch_size, num_classes)
-        self.labels = tf.placeholder(tf.int32,
-                                     (None, self.timestep, self.n_classes))
+        self.labels = tf.placeholder(tf.int32, (None, self.n_classes))
 
         # BI-LSTM
         # Define weights for the Bi-directional LSTM
@@ -233,7 +233,7 @@ class LSTM(Net):
         net = tf.reshape(self.word_embedding_input,
                          [-1, self.timestep * self.word_embd_vec],
                          name="reshape1")
-        net = tf.split(net, self.timestep, axis=0, name="split1")
+        net = tf.split(net, self.timestep, axis=1, name="split1")
 
         # Forward and backward direction cell
         lstm_fw_cell = rnn.BasicLSTMCell(self.lstm_hidden, forget_bias=1.0)
@@ -281,15 +281,13 @@ class LSTM(Net):
                     {self.word_embedding_input: word,
                      self.labels: label})
 
-                if (b + 1) % 5 == 0:
+                if (b + 1) % 15 == 0:
                     logging.info(
                         "Iteration {}/{}, Batch Loss {:.4f}, LR: {:.4f}".format(
                             b * self.batch_size, num_batches * self.batch_size,
                             loss, lr))
 
-            # eval(model, valid_chr, valid_word, valid_label,
-            #      batch_size=batch_size)
-
+            self.eval(self.valid_word, self.valid_label)
             logging.info("Finished epoch {}\n".format(epoch + 1))
 
             if (epoch + 1) % 10 == 0:
@@ -316,8 +314,8 @@ class LSTM(Net):
                  self.labels: label_b})
 
             # Update metric
-            a, p, r, f = utils.calc_metric(np.argmax(pred, axis=2),
-                                           np.argmax(label_b, axis=2))
+            a, p, r, f = utils.calc_metric(np.argmax(pred, axis=1),
+                                           np.argmax(label_b, axis=1))
             acc += a
             prec += p
             rec += r

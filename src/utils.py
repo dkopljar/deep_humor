@@ -8,23 +8,19 @@ from sklearn.metrics import accuracy_score, f1_score, recall_score, \
 import configparser
 
 
-def calc_metric(y_trues, y_preds):
+def calc_metric(y_true, y_pred):
     """
     Calculates accuracy, macro preicision, recall and f1 scores
     :param y_true: Batch of true labels
     :param y_pred: Batch of predicted labels
     :return:
     """
-    assert len(y_trues) == len(y_preds)
+    acc = accuracy_score(y_true, y_pred)
+    prec = precision_score(y_true, y_pred, average="macro")
+    rec = recall_score(y_true, y_pred, average="macro")
+    f1 = f1_score(y_true, y_pred, average="macro")
 
-    acc, prec, rec, f1, dim = 0, 0, 0, 0, y_trues.shape[0]
-    for y_true, y_pred in zip(y_trues, y_preds):
-        acc += accuracy_score(y_true, y_pred)
-        prec += precision_score(y_true, y_pred, average="macro")
-        rec += recall_score(y_true, y_pred, average="macro")
-        f1 += f1_score(y_true, y_pred, average="macro")
-
-    return acc / dim, prec / dim, rec / dim, f1 / dim
+    return acc, prec, rec, f1
 
 
 def read_config(config_file):
@@ -113,6 +109,12 @@ def download_data(download_dir="/tmp"):
         extract_zip(file, constants.DATA)
 
         # TODO Add trained weights download
+
+
+def int_to_one_hot(input, num_classes):
+    x = np.zeros(num_classes)
+    x[input] = 1
+    return x
 
 
 def shuffle_data(input, labels):

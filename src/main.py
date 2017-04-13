@@ -1,10 +1,15 @@
-import logging
-import numpy as np
-import utils
-import constants
-import os
 import datetime
+import logging
+import os
+import pdb
+import pickle
+
+import numpy as np
+
+import constants
+import dataset_parser
 import models
+import utils
 
 
 def main(config):
@@ -13,23 +18,41 @@ def main(config):
     :param config: Loaded configuration dictionary
     :return:
     """
+    config['n_classes'] = 2
+    pickle_pairs = os.path.join(constants.DATA, "pickled",
+                                "train_pairs.pkl")
+
+    with open(pickle_pairs, "rb") as f:
+        topicsMatrix = pickle.load(f)
+
+    X, y = [], []
+    for topic in topicsMatrix:
+        comb_m, comb_l = dataset_parser.combinantorial(topic)
+        X.extend(comb_m)
+        y.extend(
+            [utils.int_to_one_hot(x, config['n_classes']) for x in comb_l])
+
+    X, y = np.array(X), np.array(y)
+
+    # X, y = utils.shuffle_data(X, y)
+    x_train, x_valid, x_test, y_train, y_valid, y_test = utils.split_data(X, y)
 
     # Mock data
-    config['n_classes'] = 2
-    config['train_examples'] = 80000
-    config['validation_examples'] = 10000
-    config['test_examples'] = 5000
+    config['train_examples'] = x_train.shape[0]
+    config['validation_examples'] = x_valid.shape[0]
+    config['test_examples'] = 2
 
-    config['train_word'] = None
-    config['valid_word'] = None
-    config['train_label'] = None
-    config['valid_label'] = None
+    config['train_word'] = x_train
+    config['valid_word'] = x_valid[:5000]
+    config['train_label'] = y_train
+    config['valid_label'] = y_valid[:5000]
     config['save_dir'] = os.path.join(constants.TF_WEIGHTS)
 
     logging.info("CONFIG:")
     logging.info("\n".join([k + ": " + str(v) for k, v in config.items()]))
 
     net = models.LSTM(config)
+    net.train()
 
     # Evaluate on the TEST set
     # net.eval(test_input, test_label)

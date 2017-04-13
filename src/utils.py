@@ -118,7 +118,7 @@ def int_to_one_hot(input, num_classes):
 
 
 def shuffle_data(input, labels):
-    indices = np.arange(len(input))
+    indices = np.arange(len(input), dtype=np.int32)
     np.random.shuffle(indices)
     return input[indices], labels[indices]
 

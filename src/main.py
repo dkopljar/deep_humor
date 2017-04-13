@@ -40,10 +40,16 @@ def main(config):
     assert X.shape[2] == config['timestep']
     assert y.shape[1] == config['n_classes']
 
+    pickle_pairs_TEST = os.path.join(constants.DATA, "pickled",
+                                     "test_pairs.pkl")
+    with open(pickle_pairs, "rb") as f:
+        topicsMatrixTest = pickle.load(f)
+    x_test, y_test = create_data_pairs(topicsMatrixTest)
+
     # First we split and then we shuffle
     # Must be in this order because we want to have examples from unseen
     # topics
-    x_train, x_valid, x_test, y_train, y_valid, y_test = utils.split_data(X, y)
+    x_train, x_valid, _, y_train, y_valid, _ = utils.split_data(X, y)
 
     x_train, y_train = utils.shuffle_data(x_train, y_train)
     x_valid, y_valid = utils.shuffle_data(x_valid, y_valid)
@@ -51,7 +57,7 @@ def main(config):
 
     # Mock data
     config['train_examples'] = x_train.shape[0]
-    config['validation_examples'] = x_valid.shape[0]
+    config['validation_examples'] = x_test.shape[0]
     config['test_examples'] = x_test.shape[0]
     config['save_dir'] = os.path.join(constants.TF_WEIGHTS)
 
@@ -61,15 +67,15 @@ def main(config):
 
     # Add datasets to config
     config['train_word'] = x_train
-    config['valid_word'] = x_valid
+    config['valid_word'] = x_test
     config['train_label'] = y_train
-    config['valid_label'] = y_valid
+    config['valid_label'] = y_test
 
     net = models.BILSTM(config)
     net.train()
 
     # Evaluate on the TEST set
-    net.eval(y_test, y_train)
+    # net.eval(y_test, y_train)
 
 
 if __name__ == "__main__":

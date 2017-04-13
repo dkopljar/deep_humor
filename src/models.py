@@ -38,6 +38,9 @@ class Net:
 
         for epoch in range(self.num_epochs):
             # Shuffle training data in each epoch
+            self.train_word, self.train_label = utils.shuffle_data(
+                self.train_word,
+                self.train_label)
 
             for b in range(num_batches):
                 word = self.train_word[
@@ -74,8 +77,8 @@ class Net:
         :return:
         """
         logging.info("Evaluating on the validation set...")
-        # char, word, label = utils.shuffle_data(char, word, label)
         num_batches = input.shape[0] // self.batch_size
+        input, labels = utils.shuffle_data(input, labels)
         acc, prec, rec, f1 = 0, 0, 0, 0
         for b in range(num_batches):
             word_b = input[

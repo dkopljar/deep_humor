@@ -37,9 +37,17 @@ def main(config):
         topicsMatrix = pickle.load(f)
     X, y = create_data_pairs(topicsMatrix)
 
-    # Shuffle and split
-    X, y = utils.shuffle_data(X, y)
+    assert X.shape[2] == config['timestep']
+    assert y.shape[1] == config['n_classes']
+
+    # First we split and then we shuffle
+    # Must be in this order because we want to have examples from unseen
+    # topics
     x_train, x_valid, x_test, y_train, y_valid, y_test = utils.split_data(X, y)
+
+    x_train, y_train = utils.shuffle_data(x_train, y_train)
+    x_valid, y_valid = utils.shuffle_data(x_valid, y_valid)
+    x_test, y_test = utils.shuffle_data(x_test, y_test)
 
     # Mock data
     config['train_examples'] = x_train.shape[0]
@@ -79,8 +87,7 @@ if __name__ == "__main__":
     logging.basicConfig(filename=log_file,
                         filemode='w',
                         format='%(asctime)s: %(levelname)s: %(message)s',
-                        level=logging.DEBUG, datefmt='%d/%m/%Y %I:%M:%S %p',
-                        stream=sys.stdout)
+                        level=logging.DEBUG, datefmt='%d/%m/%Y %I:%M:%S %p')
 
     logging.info("Numpy random seed set to " + str(seed))
     main(config=config)

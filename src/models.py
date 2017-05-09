@@ -38,6 +38,9 @@ class Net:
 
         for epoch in range(self.num_epochs):
             # Shuffle training data in each epoch
+            self.train_word, self.train_label = utils.shuffle_data(
+                self.train_word,
+                self.train_label)
 
             for b in range(num_batches):
                 word = self.train_word[
@@ -74,8 +77,8 @@ class Net:
         :return:
         """
         logging.info("Evaluating on the validation set...")
-        # char, word, label = utils.shuffle_data(char, word, label)
         num_batches = input.shape[0] // self.batch_size
+        input, labels = utils.shuffle_data(input, labels)
         acc, prec, rec, f1 = 0, 0, 0, 0
         for b in range(num_batches):
             word_b = input[
@@ -99,6 +102,145 @@ class Net:
         logging.info("Macro Precision {:.3f}%".format(prec / num_batches * 100))
         logging.info("Macro Recall {:.3f}%".format(rec / num_batches * 100))
         logging.info("Macro F1 {:.3f}%\n".format(f1 / num_batches * 100))
+
+
+class Baseline(Net):
+    def __init__(self, config):
+        self.train_word = config['train_word']
+        self.valid_word = config['valid_word']
+        self.train_label = config['train_label']
+        self.valid_label = config['valid_label']
+
+    def train(self):
+        print("Evaluation on the train set")
+        x, y = self.train_word.shape
+        prediction_train = self.random_guess(x, y)
+        self.eval(prediction_train, self.train_label)
+
+        print("Evaluation on the  validation set")
+        x, y = self.valid_word.shape
+        prediction_valid = self.random_guess(x, y)
+        self.eval(prediction_valid, self.valid_label)
+
+    def random_guess(self, num_examples, num_classes):
+        dim_input = num_examples * num_classes
+        prediction_zeros = np.zeros(dim_input // 2)
+        prediction_ones = np.ones(dim_input // 2)
+        prediction = np.hstack((prediction_ones, prediction_zeros))
+        return np.random.shuffle(prediction).reshape(
+            (num_examples, num_classes))
+
+
+class BILSTM_FC(Net):
+    """
+    Glove word embeddings -> Bi-LSTM -> FC architecture, extract only the last BILSTM
+    layer.
+    """
+
+    def __init__(self, config):
+        self.learning_rate = config["lr"]
+        self.optimizer = config["optimizer"]
+        self.timestep = config["timestep"]
+        self.word_embd_vec = config["word_vector_dim"]
+        self.max_word_size = config["max_word_size"]
+        self.lstm_hidden = config["lstm_hidden"]
+        self.n_classes = config["n_classes"]
+        self.train_examples = config["train_examples"]
+        self.batch_size = config["batch_size"]
+
+        self.train_word = config['train_word']
+        self.valid_word = config['valid_word']
+        self.train_label = config['train_label']
+        self.valid_label = config['valid_label']
+        self.num_epochs = config['train_epochs']
+        self.model_save_dir = config['save_dir']
+
+        self.setup()
+
+    def setup(self):
+        self.sess = tf.Session()
+        self.global_step = tf.Variable(0, trainable=False)
+
+        """
+        Word embeddings input of size (batch_size, timestep, word_embed_dim)
+        """
+        self.word_embedding_input = tf.placeholder(tf.float32,
+                                                   (None, self.word_embd_vec,
+                                                    self.timestep))
+        self.tag_embedding = tf.placeholder(tf.float32,
+                                            (None, self.word_embd_vec))
+        # POS tags encoded in one-hot fashion (batch_size, num_classes)
+        self.labels = tf.placeholder(tf.int32, (None, self.n_classes))
+
+        # BI-BILSTM
+        # Define weights for the Bi-directional BILSTM
+        weights = {
+            # Hidden layer weights => 2*n_hidden because of forward +
+            # backward cells
+            'out': tf.Variable(
+                tf.random_uniform([2 * self.lstm_hidden, self.n_classes],
+                                  minval=-np.sqrt(6 / (
+                                      2 * self.lstm_hidden + self.n_classes)),
+                                  maxval=np.sqrt(6 / (
+                                      2 * self.lstm_hidden + self.n_classes)))
+            )
+        }
+        biases = {
+            'out': tf.Variable(tf.zeros([self.n_classes]))
+        }
+
+        net = tf.reshape(self.word_embedding_input,
+                         [-1, self.timestep * self.word_embd_vec],
+                         name="reshape1")
+        net = tf.split(net, self.timestep, axis=1, name="split1")
+
+        # Forward and backward direction cell
+        lstm_fw_cell = rnn.BasicLSTMCell(self.lstm_hidden, forget_bias=1.0)
+        lstm_bw_cell = rnn.BasicLSTMCell(self.lstm_hidden, forget_bias=1.0)
+
+        net, _, _ = rnn.static_bidirectional_rnn(cell_fw=lstm_fw_cell,
+                                                 cell_bw=lstm_bw_cell,
+                                                 inputs=net,
+                                                 dtype=tf.float32)
+
+        # Linear activation, using rnn inner loop on the final output
+        net = tf.matmul(net[-1], weights['out']) + biases['out']
+
+        # Concat Tag embedding with LSTM output
+        # TODO
+        net = tf.concat([net, self.tag_embedding], axis=0, name="concat1")
+
+        # FC Layers
+        net = tf.layers.dropout(net, rate=0.5)
+        net = tf.layers.dense(inputs=net,
+                              kernel_initializer=tf.contrib.layers.xavier_initializer(),
+                              activation=tf.nn.relu,
+                              units=512)
+        net = tf.layers.dropout(net, rate=0.5)
+        net = tf.layers.dense(inputs=net,
+                              kernel_initializer=tf.contrib.layers.xavier_initializer(),
+                              activation=tf.nn.relu,
+                              units=256)
+        net = tf.layers.dropout(net, rate=0.5)
+
+        # Logits and softmax
+        logits = tf.layers.dense(inputs=net,
+                                 kernel_initializer=tf.contrib.layers.xavier_initializer(),
+                                 units=self.n_classes)
+        # Probabilites
+        self.softmax = tf.nn.softmax(logits)
+
+        # Loss and learning rate
+        self.loss = tf.reduce_mean(
+            tf.nn.softmax_cross_entropy_with_logits(labels=self.labels,
+                                                    logits=logits))
+        self.lr = tf.train.exponential_decay(self.learning_rate,
+                                             global_step=self.global_step,
+                                             decay_steps=self.train_examples // self.batch_size,
+                                             decay_rate=0.95)
+        self.train_op = tf.train.AdamOptimizer(
+            learning_rate=self.lr).minimize(self.loss,
+                                            global_step=self.global_step)
 
 
 class BILSTM(Net):
@@ -161,6 +303,142 @@ class BILSTM(Net):
                          [-1, self.timestep * self.word_embd_vec],
                          name="reshape1")
         net = tf.split(net, self.timestep, axis=1, name="split1")
+
+        # Forward and backward direction cell
+        lstm_fw_cell = rnn.BasicLSTMCell(self.lstm_hidden, forget_bias=1.0)
+        lstm_bw_cell = rnn.BasicLSTMCell(self.lstm_hidden, forget_bias=1.0)
+
+        net, _, _ = rnn.static_bidirectional_rnn(cell_fw=lstm_fw_cell,
+                                                 cell_bw=lstm_bw_cell,
+                                                 inputs=net,
+                                                 dtype=tf.float32)
+
+        # Linear activation, using rnn inner loop on the final output
+        logits = tf.matmul(net[-1], weights['out']) + biases['out']
+
+        # Probabilites
+        self.softmax = tf.nn.softmax(logits)
+
+        # Loss and learning rate
+        self.loss = tf.reduce_mean(
+            tf.nn.softmax_cross_entropy_with_logits(labels=self.labels,
+                                                    logits=logits))
+        self.lr = tf.train.exponential_decay(self.learning_rate,
+                                             global_step=self.global_step,
+                                             decay_steps=self.train_examples // self.batch_size,
+                                             decay_rate=0.95)
+        self.train_op = tf.train.AdamOptimizer(
+            learning_rate=self.lr).minimize(self.loss,
+                                            global_step=self.global_step)
+
+
+class CNNBiLSTM(Net):
+    """
+    Char embeddings -> CNN -> word + char features -> Bi-LSTM architecture,
+    extract only the last BILSTM
+    layer.
+    """
+
+    # TODO
+
+    def __init__(self, config):
+        self.learning_rate = config["lr"]
+        self.optimizer = config["optimizer"]
+        self.timestep = config["timestep"]
+        self.word_embd_vec = config["word_vector_dim"]
+        self.max_word_size = config["max_word_size"]
+        self.lstm_hidden = config["lstm_hidden"]
+        self.n_classes = config["n_classes"]
+        self.train_examples = config["train_examples"]
+        self.batch_size = config["batch_size"]
+        self.char_vocab_dim = config['chr_vocab_dim']
+        self.char_features = config['chr_features']
+        self.cnn_filter = config['cnn_filter']
+
+        self.train_word = config['train_word']
+        self.valid_word = config['valid_word']
+        self.train_label = config['train_label']
+        self.valid_label = config['valid_label']
+        self.num_epochs = config['train_epochs']
+        self.model_save_dir = config['save_dir']
+
+        self.setup()
+
+    def setup(self):
+        self.sess = tf.Session()
+        self.global_step = tf.Variable(0, trainable=False)
+
+        """
+        Word embeddings input of size (batch_size, timestep, word_embed_dim)
+        """
+        self.word_embedding_input = tf.placeholder(tf.float32,
+                                                   (None, self.word_embd_vec,
+                                                    self.timestep))
+
+        # POS tags encoded in one-hot fashion (batch_size, num_classes)
+        self.labels = tf.placeholder(tf.int32, (None, self.n_classes))
+
+        """
+        Character embeddings input of size (batch_size, max_sentence_length
+         (a.k.a. timestep) * max_word_size)
+        """
+        self.char_embedding_input = tf.placeholder(tf.int32,
+                                                   (None,
+                                                    self.timestep * self.max_word_size))
+        # POS tags encoded in one-hot fashion (batch_size, num_classes)
+        self.labels = tf.placeholder(tf.int32,
+                                     (None, self.timestep, self.n_classes))
+
+        # Char embedding layer
+        char_embed = tf.Variable(
+            tf.random_uniform(
+                [self.char_vocab_dim, self.char_features],
+                minval=-np.sqrt(3 / self.char_features),
+                maxval=np.sqrt(3 / self.char_features)),
+        )
+        net = tf.nn.embedding_lookup(char_embed, self.char_embedding_input)
+
+        # 1-D Convolution on a character level
+        net = tf.layers.conv1d(
+            inputs=net,
+            filters=self.cnn_filter,
+            kernel_size=3,
+            strides=1,
+            padding="SAME",
+            activation=tf.nn.relu,
+            name="conv1")
+        net = tf.layers.max_pooling1d(net,
+                                      pool_size=2,
+                                      strides=2,
+                                      name="pool1")
+        net = tf.reshape(net, [-1, self.timestep, self.cnn_filter * 10],
+                         name="reshape1")
+
+        # Concatenate word and char-cnn embeddings
+        net = tf.concat([self.word_embedding_input, net], axis=2,
+                        name="concat1")
+
+        # Apply dropout and prepare input for the BI-LSTM net
+        net = tf.reshape(net, [-1, self.cnn_filter * 10 + self.word_embd_vec],
+                         name="reshape2")
+        net = tf.split(net, self.timestep, axis=0, name="split1")
+
+        # BI-BILSTM
+        # Define weights for the Bi-directional BILSTM
+        weights = {
+            # Hidden layer weights => 2*n_hidden because of forward +
+            # backward cells
+            'out': tf.Variable(
+                tf.random_uniform([2 * self.lstm_hidden, self.n_classes],
+                                  minval=-np.sqrt(6 / (
+                                      2 * self.lstm_hidden + self.n_classes)),
+                                  maxval=np.sqrt(6 / (
+                                      2 * self.lstm_hidden + self.n_classes)))
+            )
+        }
+        biases = {
+            'out': tf.Variable(tf.zeros([self.n_classes]))
+        }
 
         # Forward and backward direction cell
         lstm_fw_cell = rnn.BasicLSTMCell(self.lstm_hidden, forget_bias=1.0)

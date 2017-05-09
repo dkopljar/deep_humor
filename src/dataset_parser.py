@@ -3,11 +3,11 @@ import os
 import pickle
 import re
 
+import nltk
 import numpy as np
 
 
-def filterText(
-        tweets):  # remove unnecesary data from tweet, such as extra hashtags, links
+def filterText(tweets):  # remove unnecesary data from tweet, such as extra hashtags, links
     result = []
     for tweet in tweets:
         filtered = []
@@ -74,10 +74,12 @@ def parse_data(glove_file, data_path, pickleDir):
             vec = np.array([np.float(x) for x in split[1:]])
             embed_dict[token] = vec
 
-    all_combs_m, all_combs_l = [], []
     numberOfRows = 25
     rowSize = 100
     topicsMatrix = []
+
+    counterZaReport = 0.0
+    counterZaReportAll = 0.0
 
     for i, filename in enumerate(os.listdir(data_path)):
         print("Parsing file number:", i)
@@ -87,16 +89,23 @@ def parse_data(glove_file, data_path, pickleDir):
             current_rows = read_file_by_line_and_tokenize(
                 os.path.join(data_path, filename))
             ranks = [word[2] for word in current_rows]
-            tokenized = [re.split('\s| ', word[1]) for word in current_rows]
-            tokenized = filterText(tokenized)
+            tokenized = [nltk.word_tokenize(word[1]) for word in current_rows]
+            tokenizedCopy = []
+            for token in tokenized:
+                tokenizedCopy.append(
+                    [word.lower() for word in token if word.isalpha()])
             for k, tweet in enumerate(tokenized):
                 sentenceRow = np.zeros((rowSize, numberOfRows))
                 for j, token in enumerate(tweet[:numberOfRows]):
                     if token in embed_dict:
+                        counterZaReport += 1
                         sentenceRow[:, j] = embed_dict[token.lower()]
+                    counterZaReportAll += 1
+
                 tweetsMatrix.append((sentenceRow, ranks[k]))
             topicsMatrix.append(tweetsMatrix)
-
+    print(counterZaReport / counterZaReportAll)
     with open(pickleDir, "wb") as f:
         pickle.dump(topicsMatrix, f)
 
+        # parse_data("./resources/glove/glove.twitter.27B.100d.txt", "../dataset/train_data", "./bartol.pkl")

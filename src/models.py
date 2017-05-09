@@ -104,6 +104,33 @@ class Net:
         logging.info("Macro F1 {:.3f}%\n".format(f1 / num_batches * 100))
 
 
+class Baseline(Net):
+    def __init__(self, config):
+        self.train_word = config['train_word']
+        self.valid_word = config['valid_word']
+        self.train_label = config['train_label']
+        self.valid_label = config['valid_label']
+
+    def train(self):
+        print("Evaluation on the train set")
+        x, y = self.train_word.shape
+        prediction_train = self.random_guess(x, y)
+        self.eval(prediction_train, self.train_label)
+
+        print("Evaluation on the  validation set")
+        x, y = self.valid_word.shape
+        prediction_valid = self.random_guess(x, y)
+        self.eval(prediction_valid, self.valid_label)
+
+    def random_guess(self, num_examples, num_classes):
+        dim_input = num_examples * num_classes
+        prediction_zeros = np.zeros(dim_input // 2)
+        prediction_ones = np.ones(dim_input // 2)
+        prediction = np.hstack((prediction_ones, prediction_zeros))
+        return np.random.shuffle(prediction).reshape(
+            (num_examples, num_classes))
+
+
 class BILSTM_FC(Net):
     """
     Glove word embeddings -> Bi-LSTM -> FC architecture, extract only the last BILSTM

@@ -2,9 +2,10 @@ import logging
 import os
 import pickle
 import re
-import numpy as np
+
 import nltk
-import time
+import numpy as np
+
 
 def filterText(tweets):  # remove unnecesary data from tweet, such as extra hashtags, links
     result = []
@@ -17,8 +18,6 @@ def filterText(tweets):  # remove unnecesary data from tweet, such as extra hash
                 filtered.append(token)
         while filtered.__contains__(''):
             filtered.remove('')
-        #print(filtered)
-        #time.sleep(1)
         result.append(filtered)
     return result
 
@@ -75,7 +74,6 @@ def parse_data(glove_file, data_path, pickleDir):
             vec = np.array([np.float(x) for x in split[1:]])
             embed_dict[token] = vec
 
-    all_combs_m, all_combs_l = [], []
     numberOfRows = 25
     rowSize = 100
     topicsMatrix = []
@@ -91,25 +89,23 @@ def parse_data(glove_file, data_path, pickleDir):
             current_rows = read_file_by_line_and_tokenize(
                 os.path.join(data_path, filename))
             ranks = [word[2] for word in current_rows]
-            tokenized = [nltk.word_tokenize(word[1]) for word in current_rows] 
+            tokenized = [nltk.word_tokenize(word[1]) for word in current_rows]
             tokenizedCopy = []
             for token in tokenized:
-                tokenizedCopy.append([word.lower() for word in token if word.isalpha()])
-            #tokenized = filterText(tokenized)
+                tokenizedCopy.append(
+                    [word.lower() for word in token if word.isalpha()])
             for k, tweet in enumerate(tokenized):
                 sentenceRow = np.zeros((rowSize, numberOfRows))
                 for j, token in enumerate(tweet[:numberOfRows]):
-                    #print(token)
-                    #time.sleep(1)
                     if token in embed_dict:
-                        counterZaReport+=1
+                        counterZaReport += 1
                         sentenceRow[:, j] = embed_dict[token.lower()]
-                    counterZaReportAll+=1
+                    counterZaReportAll += 1
 
                 tweetsMatrix.append((sentenceRow, ranks[k]))
             topicsMatrix.append(tweetsMatrix)
-    print(counterZaReport/counterZaReportAll)
+    print(counterZaReport / counterZaReportAll)
     with open(pickleDir, "wb") as f:
         pickle.dump(topicsMatrix, f)
 
-#parse_data("./resources/glove/glove.twitter.27B.100d.txt", "../dataset/train_data", "./bartol.pkl")
+        # parse_data("./resources/glove/glove.twitter.27B.100d.txt", "../dataset/train_data", "./bartol.pkl")

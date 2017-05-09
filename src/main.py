@@ -34,6 +34,7 @@ def main(config):
                                 "train_pairs.pkl")
     with open(pickle_pairs, "rb") as f:
         topicsMatrix = pickle.load(f)
+    print("Creating data pairs")
     X, y = create_data_pairs(topicsMatrix)
 
     assert X.shape[2] == config['timestep']
@@ -64,11 +65,11 @@ def main(config):
     config['train_label'] = y_train
     config['valid_label'] = y_valid
 
-    net = models.BILSTM(config)
+    net = models.Baseline(config)
     net.train()
 
-    # Evaluate on the TEST set
-    net.eval(y_test, y_train)
+    # # Evaluate on the TEST set
+    # net.eval(y_test, y_train)
 
 
 if __name__ == "__main__":

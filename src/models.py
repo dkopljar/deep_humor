@@ -110,15 +110,16 @@ class Baseline(Net):
         self.valid_word = config['valid_word']
         self.train_label = config['train_label']
         self.valid_label = config['valid_label']
+        self.batch_size = config['batch_size']
 
     def train(self):
         print("Evaluation on the train set")
-        x, y = self.train_word.shape
+        x, y = self.train_word.shape[0], self.train_label.shape[1]
         prediction_train = self.random_guess(x, y)
         self.eval(prediction_train, self.train_label)
 
         print("Evaluation on the  validation set")
-        x, y = self.valid_word.shape
+        x, y = self.valid_word.shape[0], self.valid_label.shape[1]
         prediction_valid = self.random_guess(x, y)
         self.eval(prediction_valid, self.valid_label)
 
@@ -127,8 +128,24 @@ class Baseline(Net):
         prediction_zeros = np.zeros(dim_input // 2)
         prediction_ones = np.ones(dim_input // 2)
         prediction = np.hstack((prediction_ones, prediction_zeros))
-        return np.random.shuffle(prediction).reshape(
-            (num_examples, num_classes))
+        np.random.shuffle(prediction)
+        return np.reshape(prediction, (num_examples, num_classes))
+
+    def eval(self, input, labels):
+        """
+        Evalutates the model using Accuracy, Precision, Recall and F1 metrics.
+        :param input: Input of shape [batch_size, timestep, vector_dim]
+        :param
+        :return:
+        """
+        pred = input
+        acc, prec, rec, f1 = utils.calc_metric(np.argmax(pred, axis=1),
+                                               np.argmax(labels, axis=1))
+
+        logging.info("Accuracy {:.3f}%".format(acc * 100))
+        logging.info("Macro Precision {:.3f}%".format(prec * 100))
+        logging.info("Macro Recall {:.3f}%".format(rec * 100))
+        logging.info("Macro F1 {:.3f}%\n".format(f1 * 100))
 
 
 class BILSTM_FC(Net):

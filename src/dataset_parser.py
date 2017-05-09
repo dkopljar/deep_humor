@@ -7,7 +7,8 @@ import nltk
 import numpy as np
 
 
-def filterText(tweets):  # remove unnecesary data from tweet, such as extra hashtags, links
+def filterText(
+        tweets):  # remove unnecesary data from tweet, such as extra hashtags, links
     result = []
     for tweet in tweets:
         filtered = []
@@ -108,4 +109,6 @@ def parse_data(glove_file, data_path, pickleDir):
     with open(pickleDir, "wb") as f:
         pickle.dump(topicsMatrix, f)
 
-        # parse_data("./resources/glove/glove.twitter.27B.100d.txt", "../dataset/train_data", "./bartol.pkl")
+
+parse_data("./resources/glove/glove.twitter.27B.100d.txt",
+           "../dataset/train_data", "./train_pairs.pkl")

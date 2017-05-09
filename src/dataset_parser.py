@@ -110,5 +110,5 @@ def parse_data(glove_file, data_path, pickleDir):
         pickle.dump(topicsMatrix, f)
 
 
-parse_data("./resources/glove/glove.twitter.27B.100d.txt",
-           "../dataset/train_data", "./train_pairs.pkl")
+# parse_data("./resources/glove/glove.twitter.27B.100d.txt",
+#            "../dataset/train_data", "./train_pairs.pkl")

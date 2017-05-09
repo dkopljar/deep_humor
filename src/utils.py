@@ -1,12 +1,13 @@
+import configparser
 import os
 import zipfile
-import constants
-import wget
+
 import numpy as np
+import wget
 from sklearn.metrics import accuracy_score, f1_score, recall_score, \
     precision_score
-import configparser
-import pdb
+
+import constants
 
 
 def calc_metric(y_true, y_pred):

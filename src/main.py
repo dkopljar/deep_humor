@@ -17,7 +17,7 @@ def create_data_pairs(topics_matrix):
     """
     X, y = [], []
     for topic in topics_matrix:
-        comb_m, comb_l = dataset_parser.combinantorial(topic)
+        comb_m, comb_l = dataset_parser.create_pair_combs(topic)
         X.extend(comb_m)
         y.extend(
             [utils.int_to_one_hot(x, config['n_classes']) for x in comb_l])
@@ -65,7 +65,7 @@ def main(config):
     config['train_label'] = y_train
     config['valid_label'] = y_valid
 
-    net = models.Baseline(config)
+    net = models.BILSTM_FC(config)
     net.train()
 
     # # Evaluate on the TEST set

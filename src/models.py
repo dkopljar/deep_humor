@@ -105,6 +105,13 @@ class Net:
 
 
 class Baseline(Net):
+    """
+    Baseline model.
+
+    The model uses random guessing to predict humor ranking.
+    Expected metric results are ~50%.
+    """
+
     def __init__(self, config):
         self.train_word = config['train_word']
         self.valid_word = config['valid_word']
@@ -150,8 +157,8 @@ class Baseline(Net):
 
 class BILSTM_FC(Net):
     """
-    Glove word embeddings -> Bi-LSTM -> FC architecture, extract only the last BILSTM
-    layer.
+    Glove word embeddings -> Bi-LSTM -> FCs architecture, extract only the
+    last BILSTM layer.
     """
 
     def __init__(self, config):
@@ -224,8 +231,8 @@ class BILSTM_FC(Net):
         net = tf.matmul(net[-1], weights['out']) + biases['out']
 
         # Concat Tag embedding with LSTM output
-        # TODO
-        net = tf.concat([net, self.tag_embedding], axis=0, name="concat1")
+        # TODO Add tag embeddings
+        # net = tf.concat([net, self.tag_embedding], axis=0, name="concat1")
 
         # FC Layers
         net = tf.layers.dropout(net, rate=0.5)

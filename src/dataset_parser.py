@@ -7,8 +7,12 @@ import nltk
 import numpy as np
 
 
-def filterText(
-        tweets):  # remove unnecesary data from tweet, such as extra hashtags, links
+def filterText(tweets):
+    """
+     Removes unnecessary data from the tweet such as extra hashtags, links...
+    :param tweets: List of all tweets
+    :return:
+    """
     result = []
     for tweet in tweets:
         filtered = []
@@ -24,13 +28,22 @@ def filterText(
 
 
 def read_file_by_line_and_tokenize(file_path):
+    """
+    Reads the twee document file and tokenizes it.
+    :param file_path:
+    :return: List of tokenized tweets
+    """
     tweets = [line.rstrip('\n') for line in
               open(file_path, 'r', encoding="utf8")]
-    tokenized = [re.split('\t', tweet) for tweet in tweets]
-    return tokenized
+    return [re.split('\t', tweet) for tweet in tweets]
 
 
-def combinantorial(lst):
+def create_pair_combs(lst):
+    """
+    Create all pair combinations from tweets of different humor ranking.
+    :param lst:
+    :return: List of docuement pairs and the list of label pairs
+    """
     index = 1
     pairs_matrix = []
     pairs_labels = []
@@ -64,10 +77,24 @@ def combinantorial(lst):
     return pairs_matrix, pairs_labels
 
 
-def parse_data(glove_file, data_path, pickleDir):
+def parse_data(glove_file,
+               data_path,
+               pickleDir,
+               embedding_dim=100,
+               timestep=25):
+    """
+    Creates per token tweet embeddings using the Glove 100-D vectors.
+    Exports embeddings to a pickle file.
+
+    :param embedding_dim: Word embedding dimension. 100 for Glove vectors
+    :param timestep: Maximum sentence length
+    :param glove_file: Glove file path
+    :param data_path: Files directory path
+    :param pickleDir: Export pickle directory
+    """
     embed_dict = {}
 
-    logging.info("Loading glove fle")
+    logging.info("Loading glove file...")
     with open(glove_file) as f:
         for line in f:
             split = line.split()
@@ -75,12 +102,7 @@ def parse_data(glove_file, data_path, pickleDir):
             vec = np.array([np.float(x) for x in split[1:]])
             embed_dict[token] = vec
 
-    numberOfRows = 25
-    rowSize = 100
     topicsMatrix = []
-
-    counterZaReport = 0.0
-    counterZaReportAll = 0.0
 
     for i, filename in enumerate(os.listdir(data_path)):
         print("Parsing file number:", i)
@@ -96,19 +118,18 @@ def parse_data(glove_file, data_path, pickleDir):
                 tokenizedCopy.append(
                     [word.lower() for word in token if word.isalpha()])
             for k, tweet in enumerate(tokenized):
-                sentenceRow = np.zeros((rowSize, numberOfRows))
-                for j, token in enumerate(tweet[:numberOfRows]):
+                sentenceRow = np.zeros((embedding_dim, timestep))
+                for j, token in enumerate(tweet[:timestep]):
                     if token in embed_dict:
-                        counterZaReport += 1
                         sentenceRow[:, j] = embed_dict[token.lower()]
-                    counterZaReportAll += 1
 
                 tweetsMatrix.append((sentenceRow, ranks[k]))
             topicsMatrix.append(tweetsMatrix)
-    print(counterZaReport / counterZaReportAll)
+
     with open(pickleDir, "wb") as f:
         pickle.dump(topicsMatrix, f)
 
 
-# parse_data("./resources/glove/glove.twitter.27B.100d.txt",
-#            "../dataset/train_data", "./train_pairs.pkl")
+if __name__ == "__main__":
+    parse_data("./resources/glove/glove.twitter.27B.100d.txt",
+               "../dataset/train_data", "./train_pairs.pkl")

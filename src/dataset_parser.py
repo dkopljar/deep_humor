@@ -5,7 +5,21 @@ import re
 
 import nltk
 import numpy as np
+import pdb
 
+
+def loadGlove(glove_file):
+    embed_dict = {}
+
+    logging.info("Loading glove file...")
+    with open(glove_file) as f:
+        for line in f:
+            split = line.split()
+            token = split[0]
+            vec = np.array([np.float(x) for x in split[1:]])
+            embed_dict[token] = vec
+
+    return embed_dict
 
 def filterText(tweets):
     """
@@ -36,6 +50,90 @@ def read_file_by_line_and_tokenize(file_path):
     tweets = [line.rstrip('\n') for line in
               open(file_path, 'r', encoding="utf8")]
     return [re.split('\t', tweet) for tweet in tweets]
+
+def prepare_dataset_for_taskB(glove_file,
+               data_path,
+               pickleInputDir,
+               pickleLabelDir,
+               embedding_dim=100,
+               timestep=25):
+
+    """
+    Creates per token tweet embeddings using the Glove 100-D vectors.
+    Exports embeddings for tweets and labels to a pickle file.
+
+    Labels: [0,0,1] = 2   [0,1,0] = 1  [1,0,0] = 0
+
+    :param embedding_dim: Word embedding dimension. 100 for Glove vectors
+    :param timestep: Maximum sentence length
+    :param glove_file: Glove file path
+    :param data_path: Files directory path
+    :param pickleInputDir: Export pickle directory for inputs
+    :param pickleLabelDir: Export pickle directory for inputs
+    """
+
+    embed_dict = {}
+
+    logging.info("Loading glove file...")
+    with open(glove_file) as f:
+        for line in f:
+            split = line.split()
+            token = split[0]
+            vec = np.array([np.float(x) for x in split[1:]])
+            embed_dict[token] = vec
+
+    inputMatrix = []
+    labelMatrix = []
+
+    for i, filename in enumerate(os.listdir(data_path)):
+        print("Parsing file number:", i)
+
+        if filename.endswith(".tsv"):
+            tweetsMatrix = []
+            current_rows = read_file_by_line_and_tokenize(
+                os.path.join(data_path, filename))
+            ranks = [word[2] for word in current_rows]
+            tokenized = [nltk.word_tokenize(word[1]) for word in current_rows]
+            tokenizedCopy = []
+            for token in tokenized:
+                tokenizedCopy.append(
+                    [word.lower() for word in token if word.isalpha()])
+            for k, tweet in enumerate(tokenized):
+                sentenceRow = np.zeros((embedding_dim, timestep))
+                label = np.zeros(3)
+                label[int(ranks[k])]=1
+                for j, token in enumerate(tweet[:timestep]):
+                    if token in embed_dict:
+                        sentenceRow[:, j] = embed_dict[token.lower()]
+
+                inputMatrix.append(sentenceRow)
+                labelMatrix.append(label)
+
+    with open(pickleInputDir, "wb") as f:
+        pickle.dump(inputMatrix, f)
+
+    with open(pickleLabelDir, "wb") as f:
+        pickle.dump(labelMatrix, f)
+
+def createGlovefromTweet(embed_dict, tweetText, embedding_dim=100,
+               timestep=25):
+    """
+    Method takes tweet and converts it in Glove embedding
+
+    :param embed_dict: Glove dictionary
+    :param timestep: Maximum sentence length
+    :param embedding_dim: Word embedding dimension. 100 for Glove vectors
+    :param tweetText: Tweeter text
+
+    """
+    tokens = nltk.word_tokenize(tweetText)
+    tokens = [word.lower() for word in tokens]
+    sentenceRow = np.zeros((embedding_dim, timestep))
+    for j, token in enumerate(tokens[:timestep]):
+        if token in embed_dict:
+            sentenceRow[:, j] = embed_dict[token.lower()]
+    pdb.set_trace()
+    return sentenceRow
 
 
 def create_pair_combs(lst):
@@ -129,7 +227,9 @@ def parse_data(glove_file,
     with open(pickleDir, "wb") as f:
         pickle.dump(topicsMatrix, f)
 
+glove = loadGlove("./resources/glove/glove.twitter.27B.100d.txt")
+createGlovefromTweet(glove, "Gugi is smart boy")
 
-if __name__ == "__main__":
-    parse_data("./resources/glove/glove.twitter.27B.100d.txt",
-               "../dataset/train_data", "./train_pairs.pkl")
+#if __name__ == "__main__":
+ #   prepare_dataset_for_taskB("./resources/glove/glove.twitter.27B.100d.txt",
+  #             "../dataset/", "./trainDamir.pkl", "./trainDamir2.pkl")

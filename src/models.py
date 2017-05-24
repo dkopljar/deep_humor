@@ -405,18 +405,17 @@ class CNN_FC(Net):
                             weights_initializer=tf.truncated_normal_initializer(
                                 0.0, 0.01),
                             weights_regularizer=slim.l2_regularizer(0.0005)):
-            net = slim.repeat(net, 2, slim.conv2d, 32,
+            net = slim.repeat(net, 1, slim.conv2d, 32,
                               [self.word_embd_vec, 3], scope='conv1')
             net = slim.max_pool2d(net, [1, 2], scope='pool1')
 
-            net = slim.repeat(net, 2, slim.conv2d, 64,
+            net = slim.repeat(net, 1, slim.conv2d, 64,
                               [self.word_embd_vec, 5], scope='conv2')
             net = slim.max_pool2d(net, [1, 2], scope='pool2')
 
             # FC layers
             net = slim.flatten(net, scope="flatten3")
-            net = slim.fully_connected(net, 512, activation_fn=None,
-                                       scope='fc3')
+            net = slim.fully_connected(net, 512, scope='fc3')
             net = slim.dropout(net, keep_prob=0.5, scope="dropout4")
             logits = slim.fully_connected(net, self.n_classes,
                                           activation_fn=None,

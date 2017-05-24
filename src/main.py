@@ -65,7 +65,7 @@ def main(config):
     config['train_label'] = y_train
     config['valid_label'] = y_valid
 
-    net = models.BILSTM_FC(config)
+    net = models.CNN_FC(config)
     net.train()
 
     # # Evaluate on the TEST set
@@ -75,7 +75,7 @@ def main(config):
 if __name__ == "__main__":
     seed = 1337
     np.random.seed(seed)
-    config = utils.read_config(os.path.join(constants.CONFIGS, "word_lstm.ini"))
+    config = utils.read_config(os.path.join(constants.CONFIGS, "cnn.ini"))
 
     # Setup logging
     utils.dir_creator([constants.LOGS, constants.TF_WEIGHTS])

@@ -61,11 +61,11 @@ class Net:
             self.eval(self.valid_word, self.valid_label)
             logging.info("Finished epoch {}\n".format(epoch + 1))
 
-            if (epoch + 1) % 10 == 0:
+            if (epoch + 1) % 3 == 0:
                 # Save model every n epochs
                 path = saver.save(self.sess,
                                   os.path.join(self.model_save_dir,
-                                               "_cnn_bilstm_crf.ckpt"),
+                                               self.model_name + ".ckpt"),
                                   global_step=self.global_step)
                 logging.info("Model saved at: " + str(path))
 
@@ -171,6 +171,7 @@ class BILSTM_FC(Net):
         self.n_classes = config["n_classes"]
         self.train_examples = config["train_examples"]
         self.batch_size = config["batch_size"]
+        self.model_name = config["domain"]
 
         self.train_word = config['train_word']
         self.valid_word = config['valid_word']
@@ -190,9 +191,11 @@ class BILSTM_FC(Net):
         """
         self.word_embedding_input = tf.placeholder(tf.float32,
                                                    (None, self.word_embd_vec,
-                                                    self.timestep))
+                                                    self.timestep),
+                                                   name="input")
         self.tag_embedding = tf.placeholder(tf.float32,
-                                            (None, self.word_embd_vec))
+                                            (None, self.word_embd_vec),
+                                            name="labels")
         # POS tags encoded in one-hot fashion (batch_size, num_classes)
         self.labels = tf.placeholder(tf.int32, (None, self.n_classes))
 
@@ -250,9 +253,10 @@ class BILSTM_FC(Net):
         # Logits and softmax
         logits = tf.layers.dense(inputs=net,
                                  kernel_initializer=tf.contrib.layers.xavier_initializer(),
-                                 units=self.n_classes)
+                                 units=self.n_classes,
+                                 name="logits")
         # Probabilites
-        self.softmax = tf.nn.softmax(logits)
+        self.softmax = tf.nn.softmax(logits, name="softmax")
 
         # Loss and learning rate
         self.loss = tf.reduce_mean(
@@ -283,6 +287,7 @@ class BILSTM(Net):
         self.n_classes = config["n_classes"]
         self.train_examples = config["train_examples"]
         self.batch_size = config["batch_size"]
+        self.model_name = config["domain"]
 
         self.train_word = config['train_word']
         self.valid_word = config['valid_word']
@@ -302,7 +307,8 @@ class BILSTM(Net):
         """
         self.word_embedding_input = tf.placeholder(tf.float32,
                                                    (None, self.word_embd_vec,
-                                                    self.timestep))
+                                                    self.timestep),
+                                                   name="input")
         # POS tags encoded in one-hot fashion (batch_size, num_classes)
         self.labels = tf.placeholder(tf.int32, (None, self.n_classes))
 
@@ -341,7 +347,7 @@ class BILSTM(Net):
         logits = tf.matmul(net[-1], weights['out']) + biases['out']
 
         # Probabilites
-        self.softmax = tf.nn.softmax(logits)
+        self.softmax = tf.nn.softmax(logits, name="softmax")
 
         # Loss and learning rate
         self.loss = tf.reduce_mean(
@@ -378,6 +384,7 @@ class CNNBiLSTM(Net):
         self.char_vocab_dim = config['chr_vocab_dim']
         self.char_features = config['chr_features']
         self.cnn_filter = config['cnn_filter']
+        self.model_name = config["domain"]
 
         self.train_word = config['train_word']
         self.valid_word = config['valid_word']

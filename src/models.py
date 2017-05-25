@@ -371,6 +371,10 @@ class CNN_FC(Net):
         self.optimizer = config["optimizer"]
         self.timestep = config["timestep"]
         self.word_embd_vec = config["word_vector_dim"]
+        self.char_timestep = config['char_timestep']
+        self.char_embedding_dim = config['char_embeddings_dim']
+        self.char_vocab_size = config['char_vocab_size']
+
         self.n_classes = config["n_classes"]
         self.train_examples = config["train_examples"]
         self.batch_size = config["batch_size"]
@@ -390,14 +394,25 @@ class CNN_FC(Net):
 
         # Define inputs
         """
-        Word embeddings input of size (batch_size, timestep, word_embed_dim)
+        Char embeddings input of size (batch_size, timestep, word_embed_dim)
         """
-        self.word_embedding_input = tf.placeholder(tf.float32,
-                                                   (None, self.word_embd_vec,
-                                                    self.timestep))
+
+        # TODO Change naming
+        self.word_embedding_input = tf.placeholder(tf.int32,
+                                                   (None, self.char_timestep),
+                                                   name="input")
         self.labels = tf.placeholder(tf.int32, (None, self.n_classes))
 
-        net = tf.expand_dims(self.word_embedding_input, axis=3)
+        # Char embedding layer
+        char_embed = tf.Variable(
+            tf.random_uniform(
+                [self.char_vocab_size, self.char_embedding_dim],
+                minval=-np.sqrt(3 / self.char_embedding_dim),
+                maxval=np.sqrt(3 / self.char_embedding_dim)),
+            name="char_embedding")
+        net = tf.nn.embedding_lookup(char_embed, self.word_embedding_input)
+        net = tf.layers.dropout(net, rate=0.5)
+        net = tf.expand_dims(net, axis=3)
 
         # Network layers
         with slim.arg_scope([slim.conv2d, slim.fully_connected],
@@ -406,11 +421,11 @@ class CNN_FC(Net):
                                 0.0, 0.01),
                             weights_regularizer=slim.l2_regularizer(0.0005)):
             net = slim.repeat(net, 1, slim.conv2d, 32,
-                              [self.word_embd_vec, 3], scope='conv1')
+                              [self.char_timestep, 3], scope='conv1')
             net = slim.max_pool2d(net, [1, 2], scope='pool1')
 
             net = slim.repeat(net, 1, slim.conv2d, 64,
-                              [self.word_embd_vec, 5], scope='conv2')
+                              [self.char_timestep, 5], scope='conv2')
             net = slim.max_pool2d(net, [1, 2], scope='pool2')
 
             # FC layers
@@ -422,7 +437,7 @@ class CNN_FC(Net):
                                           scope='logits')
 
         # Probabilities
-        self.softmax = tf.nn.softmax(logits)
+        self.softmax = tf.nn.softmax(logits, name="softmax")
 
         # Loss and learning rate
         self.loss = tf.reduce_mean(

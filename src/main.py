@@ -65,6 +65,10 @@ def main(config):
     config['train_label'] = y_train
     config['valid_label'] = y_valid
 
+    # TODO Change this
+    config['char_timestep'] = 100
+    config['char_vocab_size'] = 30
+
     net = models.CNN_FC(config)
     net.train()
 

@@ -43,7 +43,6 @@ def read_config(config_file):
     conf_dict['char_embeddings_dim'] = int(
         config["MODEL"]['character embeddings dimension'])
     conf_dict['max_word_size'] = int(config["MODEL"]['max word length'])
-    conf_dict['filter_dim'] = int(config["MODEL"]['cnn filter dimension'])
     conf_dict['lstm_hidden'] = int(config["MODEL"]['lstm hidden state dim'])
     conf_dict['batch_size'] = int(config["MODEL"]['batch size'])
     conf_dict['domain'] = config["GENERAL"]['domain']

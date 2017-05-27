@@ -7,8 +7,7 @@ import itertools
 import math
 from random import randint
 
-def main():
-    _, input_dir, output_dir = sys.argv
+def generate(input_dir, output_dir):
     input_files = os.listdir(input_dir)
     target_hashtags = [os.path.splitext(gf)[0] for gf in input_files]
     print('Target hashtags: {} ({})'.format(len(target_hashtags), ', '.join(target_hashtags)))
@@ -18,7 +17,7 @@ def main():
         output_filename = os.path.join(output_dir, hashtag + '_PREDICT.tsv')
         tweets = load_input_file(input_filename) # (tweetID, tweetText)
         
-        results = []
+        results = {}
         # make tweet combinations and get result
         index = 1
         for tweetID1, tweet_text1 in tweets:
@@ -29,11 +28,20 @@ def main():
                 feature_vector1 = get_feature_vector(tweet_text1)
                 feature_vector2 = get_feature_vector(tweet_text2)
                 network_result = get_classification(feature_vector1, feature_vector2)
-                results.append((tweetID1, tweetID2, network_result))
-
+                
+                if network_result == 1:
+                    increase_counter(results, tweetID1)
+                else:
+                    increase_counter(results, tweetID2)
             index += 1
         
         write_output_file(output_filename, results)
+
+def increase_counter(dictionary, key):
+    if key in dictionary:
+        dictionary[key] += 1
+    else:
+        dictionary[key] = 1
 
 def get_feature_vector(tweet_text):
     # create feature vector for each tweet
@@ -41,6 +49,7 @@ def get_feature_vector(tweet_text):
 
 def get_classification(feature_vector1, feature_vector2):
     # call network sexybarty707
+    # 1 if first (left, f_v1) is funnier, 0 otherwise
     return randint(0,1)
 
 def load_input_file(filename):
@@ -53,13 +62,14 @@ def load_input_file(filename):
 
 def write_output_file(filename, results):
     with open(filename, 'w') as f:
-        for tweetID1, tweetID2, result in results:
-            f.write(tweetID1 + "\t" + tweetID2 + "\t" + str(result) + "\n")
+        for tweetID, count in sorted(results.items(), key=lambda x: x[1], reverse=True):
+            f.write(tweetID + "\n")
 
 if __name__ == '__main__':
     if len(sys.argv) != 3:
         print('Usage:', __file__, '<input_dir> <output_dir>')
         print('Input directory contains tsv files for each theme.')
         sys.exit(1)
-
-    main()
+        
+    _, input_dir, output_dir = sys.argv
+    generate(input_dir, output_dir)

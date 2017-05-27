@@ -11,10 +11,7 @@ import itertools
 import math
 
 
-def main():
-    # as per the metadata file, input and output directories are the arguments
-    _, submission_dir, gold_dir = sys.argv
-
+def evaluate(submission_dir, gold_dir):
     gold_files = os.listdir(gold_dir)
     target_hashtags = [os.path.splitext(gf)[0] for gf in gold_files]
     print('Target hashtags: {} ({})'.format(len(target_hashtags), ', '.join(target_hashtags)))
@@ -139,4 +136,6 @@ if __name__ == '__main__':
               'The files in the <gold_dir> should be files formatted as have been released in train/trail data files')
         sys.exit(1)
 
-    main()
+    # as per the metadata file, input and output directories are the arguments
+    _, submission_dir, gold_dir = sys.argv
+    evaluate(submission_dir, gold_dir)

@@ -38,9 +38,9 @@ class Net:
 
         for epoch in range(self.num_epochs):
             # Shuffle training data in each epoch
-            self.train_word, self.train_label = utils.shuffle_data(
+            self.train_word, self.train_label = utils.shuffle_data([
                 self.train_word,
-                self.train_label)
+                self.train_label])
 
             for b in range(num_batches):
                 word = self.train_word[
@@ -78,7 +78,7 @@ class Net:
         """
         logging.info("Evaluating on the validation set...")
         num_batches = input.shape[0] // self.batch_size
-        input, labels = utils.shuffle_data(input, labels)
+        input, labels = utils.shuffle_data([input, labels])
         acc, prec, rec, f1 = 0, 0, 0, 0
         for b in range(num_batches):
             word_b = input[
@@ -175,6 +175,8 @@ class BILSTM_FC(Net):
 
         self.train_word = config['train_word']
         self.valid_word = config['valid_word']
+        self.train_char = config['train_chr']
+        self.valid_char = config['valid_chr']
         self.train_label = config['train_label']
         self.valid_label = config['valid_label']
         self.num_epochs = config['train_epochs']

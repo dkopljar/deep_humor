@@ -5,9 +5,10 @@ import re
 
 import nltk
 import numpy as np
-import pdb
+
 import char_mapper
 import constants
+
 
 def clear_tweet(tweet):
     """
@@ -17,11 +18,13 @@ def clear_tweet(tweet):
     """
     tweet = tweet
     for word in tweet.split():
-        if word.startswith('#') or word.startswith('@') or word.startswith('.@') or word.startswith('http'):
-            tweet = tweet.replace(' ' + word, "") # if it is on the end
-            tweet = tweet.replace(word + ' ', "") # if it is on the begining
+        if word.startswith('#') or word.startswith('@') or word.startswith(
+                '.@') or word.startswith('http'):
+            tweet = tweet.replace(' ' + word, "")  # if it is on the end
+            tweet = tweet.replace(word + ' ', "")  # if it is on the begining
     return tweet
-        
+
+
 def tweet_to_integer_vector(tweet):
     """
     Maps given tweet (it will lowercase it) to np.array of constants.TWEET_CHARACTER_COUNT dimension, 
@@ -34,12 +37,13 @@ def tweet_to_integer_vector(tweet):
     last_index = 0
     for index, character in enumerate(tweet):
         last_index = index
-        if index == constants.TWEET_CHARACTER_COUNT - 1: # leave space for ending character
+        if index == constants.TWEET_CHARACTER_COUNT - 1:  # leave space for ending character
             break
         vector[index] = char_mapper.map_letter_to_int(character)
     vector[last_index] = char_mapper.map_letter_to_int('end')
     return vector
-        
+
+
 def loadGlove(glove_file):
     embed_dict = {}
 
@@ -52,6 +56,7 @@ def loadGlove(glove_file):
             embed_dict[token] = vec
 
     return embed_dict
+
 
 def filterText(tweets):
     """
@@ -83,13 +88,13 @@ def read_file_by_line_and_tokenize(file_path):
               open(file_path, 'r', encoding="utf8")]
     return [re.split('\t', tweet) for tweet in tweets]
 
-def prepare_dataset_for_taskB(glove_file,
-               data_path,
-               pickleInputDir,
-               pickleLabelDir,
-               embedding_dim=100,
-               timestep=25):
 
+def prepare_dataset_for_taskB(glove_file,
+                              data_path,
+                              pickleInputDir,
+                              pickleLabelDir,
+                              embedding_dim=100,
+                              timestep=25):
     """
     Creates per token tweet embeddings using the Glove 100-D vectors.
     Exports embeddings for tweets and labels to a pickle file.
@@ -133,7 +138,7 @@ def prepare_dataset_for_taskB(glove_file,
             for k, tweet in enumerate(tokenized):
                 sentenceRow = np.zeros((embedding_dim, timestep))
                 label = np.zeros(3)
-                label[int(ranks[k])]=1
+                label[int(ranks[k])] = 1
                 for j, token in enumerate(tweet[:timestep]):
                     if token in embed_dict:
                         sentenceRow[:, j] = embed_dict[token.lower()]
@@ -147,8 +152,9 @@ def prepare_dataset_for_taskB(glove_file,
     with open(pickleLabelDir, "wb") as f:
         pickle.dump(labelMatrix, f)
 
+
 def createGlovefromTweet(embed_dict, tweetText, embedding_dim=100,
-               timestep=25):
+                         timestep=25):
     """
     Method takes tweet and converts it in Glove embedding
 
@@ -174,36 +180,47 @@ def create_pair_combs(lst):
     :return: List of docuement pairs and the list of label pairs
     """
     index = 1
-    pairs_matrix = []
+    pairs_words = []
     pairs_labels = []
+    pairs_chrs = []
+
     for element1 in lst:
         for element2 in lst[index:]:
-            if element1[1] == element2[1]:
+            if int(element1[-1]) == int(element2[-1]):
                 continue
-            if element1[1] < element2[1]:
+            if int(element1[-1]) < int(element2[-1]):
                 if np.random.random() > 0.5:
                     concatMatrix = np.concatenate((element1[0], element2[0]),
                                                   axis=1)
-                    pairs_matrix.append(concatMatrix)
+                    chr_merged = np.concatenate((element1[1], element2[1]),
+                                                axis=0)
                     pairs_labels.append(0)
                 else:
                     concatMatrix = np.concatenate((element2[0], element1[0]),
                                                   axis=1)
-                    pairs_matrix.append(concatMatrix)
+                    chr_merged = np.concatenate((element2[1], element1[1]),
+                                                axis=0)
                     pairs_labels.append(1)
             else:
                 if np.random.random() > 0.5:
                     concatMatrix = np.concatenate((element2[0], element1[0]),
                                                   axis=1)
-                    pairs_matrix.append(concatMatrix)
+                    chr_merged = np.concatenate((element2[1], element1[1]),
+                                                axis=0)
                     pairs_labels.append(0)
                 else:
                     concatMatrix = np.concatenate((element1[0], element2[0]),
                                                   axis=1)
-                    pairs_matrix.append(concatMatrix)
+                    chr_merged = np.concatenate((element1[1], element2[1]),
+                                                axis=0)
                     pairs_labels.append(1)
+
+            # Add word and char level information
+            pairs_words.append(concatMatrix)
+            pairs_chrs.append(chr_merged)
+
         index += 1
-    return pairs_matrix, pairs_labels
+    return pairs_words, pairs_chrs, pairs_labels
 
 
 def parse_data(glove_file,
@@ -258,9 +275,9 @@ def parse_data(glove_file,
     with open(pickleDir, "wb") as f:
         pickle.dump(topicsMatrix, f)
 
-# glove = loadGlove("./resources/glove/glove.twitter.27B.100d.txt")
-# createGlovefromTweet(glove, "Gugi is smart boy")
+        # glove = loadGlove("./resources/glove/glove.twitter.27B.100d.txt")
+        # createGlovefromTweet(glove, "Gugi is smart boy")
 
-#if __name__ == "__main__":
- #   prepare_dataset_for_taskB("./resources/glove/glove.twitter.27B.100d.txt",
-  #             "../dataset/", "./trainDamir.pkl", "./trainDamir2.pkl")
+        # if __name__ == "__main__":
+        #   prepare_dataset_for_taskB("./resources/glove/glove.twitter.27B.100d.txt",
+        #             "../dataset/", "./trainDamir.pkl", "./trainDamir2.pkl")

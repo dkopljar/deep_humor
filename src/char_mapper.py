@@ -1,9 +1,8 @@
-
 letter_to_int_dict = {
     'padding': 0,
     'a': 1,
-    'b': 2, 
-    'c': 3, 
+    'b': 2,
+    'c': 3,
     'd': 4,
     'e': 5,
     'f': 6,
@@ -44,11 +43,12 @@ letter_to_int_dict = {
     'end': 41
 }
 
+
 def map_letter_to_int(value):
     """
     Maps given letter or string to integer. For non-important characters it will return 42.
     :param value: String or character to map. Possbile strings: 'end' and 'padding'.
     :return: Integer value for given string or character.
     """
-    return letter_to_int_dict.get(value, 42) # 42 is used for non-important characters
-
+    return letter_to_int_dict.get(value,
+                                  42)  # 42 is used for non-important characters

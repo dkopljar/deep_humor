@@ -2,19 +2,18 @@
 
 from __future__ import print_function, absolute_import, division
 
-import sys
-import os
 import csv
-
 import itertools
-
 import math
+import os
+import sys
 
 
 def evaluate(submission_dir, gold_dir):
     gold_files = os.listdir(gold_dir)
     target_hashtags = [os.path.splitext(gf)[0] for gf in gold_files]
-    print('Target hashtags: {} ({})'.format(len(target_hashtags), ', '.join(target_hashtags)))
+    print('Target hashtags: {} ({})'.format(len(target_hashtags),
+                                            ', '.join(target_hashtags)))
 
     print('Submission files: {}'.format(len(os.listdir(submission_dir))))
 
@@ -36,8 +35,9 @@ def evaluate(submission_dir, gold_dir):
         predictions = load_predictions(pred_filename)
 
         if len(predictions) != nb_combs:
-            print('Warning! Incorrect number of total predictions for the hashtag {} - {}/{}'.format(
-                hashtag, len(predictions), nb_combs))
+            print(
+                'Warning! Incorrect number of total predictions for the hashtag {} - {}/{}'.format(
+                    hashtag, len(predictions), nb_combs))
 
         for tweet1, tweet2, label in predictions:
             key = (tweet1, tweet2)
@@ -50,7 +50,8 @@ def evaluate(submission_dir, gold_dir):
                     cur_correct += 1
 
         print('Hashtag: {} - {:.3f}, lines: {}, correct: {}, total: {}'.format(
-            hashtag, cur_correct / cur_total, len(predictions), cur_correct, cur_total))
+            hashtag, cur_correct / cur_total, len(predictions), cur_correct,
+            cur_total))
 
         total += cur_total
         correct += cur_correct
@@ -76,7 +77,8 @@ def load_gold_file(filename):
     }
 
     with open(filename, 'r') as f:
-        reader = csv.reader(f, delimiter='\t', quoting=csv.QUOTE_NONE, escapechar=None)
+        reader = csv.reader(f, delimiter='\t', quoting=csv.QUOTE_NONE,
+                            escapechar=None)
         for row in reader:
             tweet_id, tweet_text, tweet_label = row
             label_list_dict[tweet_label].append(tweet_id)
@@ -102,7 +104,8 @@ def create_gold_dict(win_list, top10_list, nontop10_list):
             gold_dict[(t2, t1)] = 0
 
     assert len(gold_dict) == 2 * (
-        (1 * 9) + (1 * len(nontop10_list)) + 9 * len(nontop10_list)), 'Incorrect length of the gold dict'
+        (1 * 9) + (1 * len(nontop10_list)) + 9 * len(
+            nontop10_list)), 'Incorrect length of the gold dict'
 
     return gold_dict
 
@@ -110,7 +113,8 @@ def create_gold_dict(win_list, top10_list, nontop10_list):
 def load_predictions(filename):
     predictions = []
     with open(filename, 'r') as f:
-        reader = csv.reader(f, delimiter='\t', quoting=csv.QUOTE_NONE, escapechar=None)
+        reader = csv.reader(f, delimiter='\t', quoting=csv.QUOTE_NONE,
+                            escapechar=None)
         for row in reader:
             tweet1, tweet2, label = row
             predictions.append((tweet1, tweet2, int(label)))
@@ -128,10 +132,13 @@ if __name__ == '__main__':
         print('Usage:', __file__, '<prediction_dir> <gold_dir>')
         print(' ',
               'The files in the <prediction_dir> should be named like their corresponding data files, but with _PREDICT prior to the .tsv extension')
-        print('  ', 'For example, Hahstag_File.tsv should be named Hashtag_File_PREDICT.tsv')
-        print(' ', 'The files in the <prediction_dir> should be formatted as follows: ')
+        print('  ',
+              'For example, Hahstag_File.tsv should be named Hashtag_File_PREDICT.tsv')
+        print(' ',
+              'The files in the <prediction_dir> should be formatted as follows: ')
         print('  ', '<tweet1_id>\\t<tweet2_id>\\t<prediction>')
-        print('  ', 'where <prediction> is 1 if the first tweets is funnier and 0 otherwise')
+        print('  ',
+              'where <prediction> is 1 if the first tweets is funnier and 0 otherwise')
         print(' ',
               'The files in the <gold_dir> should be files formatted as have been released in train/trail data files')
         sys.exit(1)

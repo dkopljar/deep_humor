@@ -1,28 +1,30 @@
 #!/usr/bin/env python
 
 from __future__ import print_function, absolute_import, division
-import sys
-import os
+
 import csv
-import itertools
-import math
+import os
+import sys
 from random import randint
-import dataset_parser
+
 import constants
+import dataset_parser
+
 
 def generate(input_dir, output_dir):
     glove = dataset_parser.loadGlove(constants.GLOVE_PATH)
     print("loaded glove file")
-    
+
     input_files = os.listdir(input_dir)
     target_hashtags = [os.path.splitext(gf)[0] for gf in input_files]
-    print('Target hashtags: {} ({})'.format(len(target_hashtags), ', '.join(target_hashtags)))
+    print('Target hashtags: {} ({})'.format(len(target_hashtags),
+                                            ', '.join(target_hashtags)))
 
     for hashtag in target_hashtags:
         input_filename = os.path.join(input_dir, hashtag + '.tsv')
         output_filename = os.path.join(output_dir, hashtag + '_PREDICT.tsv')
-        tweets = load_input_file(input_filename) # (tweetID, tweetText)
-        
+        tweets = load_input_file(input_filename)  # (tweetID, tweetText)
+
         results = []
         # make tweet combinations and get result
         index = 1
@@ -33,32 +35,39 @@ def generate(input_dir, output_dir):
 
                 feature_vector1 = get_feature_vector(glove, tweet_text1)
                 feature_vector2 = get_feature_vector(glove, tweet_text2)
-                network_result = get_classification(feature_vector1, feature_vector2)
+                network_result = get_classification(feature_vector1,
+                                                    feature_vector2)
                 results.append((tweetID1, tweetID2, network_result))
 
             index += 1
-        
+
         write_output_file(output_filename, results)
+
 
 def get_feature_vector(embed_dict, tweet_text):
     return dataset_parser.createGlovefromTweet(embed_dict, tweet_text)
 
+
 def get_classification(feature_vector1, feature_vector2):
     # call network sexybarty707
-    return randint(0,1)
+    return randint(0, 1)
+
 
 def load_input_file(filename):
     tweets_list = []
     with open(filename, 'r') as f:
-        reader = csv.reader(f, delimiter='\t', quoting=csv.QUOTE_NONE, escapechar=None)
+        reader = csv.reader(f, delimiter='\t', quoting=csv.QUOTE_NONE,
+                            escapechar=None)
         for row in reader:
             tweets_list.append(row)
     return tweets_list
+
 
 def write_output_file(filename, results):
     with open(filename, 'w') as f:
         for tweetID1, tweetID2, result in results:
             f.write(tweetID1 + "\t" + tweetID2 + "\t" + str(result) + "\n")
+
 
 if __name__ == '__main__':
     if len(sys.argv) != 3:

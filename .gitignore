@@ -8,6 +8,7 @@ temp-output/
 
 # C extensions
 *.so
+*.pickle
 
 # Distribution / packaging
 .Python

@@ -6,6 +6,8 @@ RSC = os.path.join(ROOT, "resources")
 
 DATA = os.path.join(ROOT, "data")
 
+TEMP_OUTPUT = os.path.join(ROOT, "temp-output")
+
 # Data and resources URLs
 GLOVE_TWITTER = "http://nlp.stanford.edu/data/glove.twitter.27B.zip"
 TRAIN = "http://alt.qcri.org/semeval2017/task6/data/uploads/train_data.zip"

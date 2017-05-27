@@ -7,8 +7,13 @@ import csv
 import itertools
 import math
 from random import randint
+import dataset_parser
+import constants
 
 def generate(input_dir, output_dir):
+    glove = dataset_parser.loadGlove(constants.GLOVE_PATH)
+    print("loaded glove file")
+    
     input_files = os.listdir(input_dir)
     target_hashtags = [os.path.splitext(gf)[0] for gf in input_files]
     print('Target hashtags: {} ({})'.format(len(target_hashtags), ', '.join(target_hashtags)))
@@ -26,8 +31,8 @@ def generate(input_dir, output_dir):
                 if tweetID1 == tweetID2:
                     continue
 
-                feature_vector1 = get_feature_vector(tweet_text1)
-                feature_vector2 = get_feature_vector(tweet_text2)
+                feature_vector1 = get_feature_vector(glove, tweet_text1)
+                feature_vector2 = get_feature_vector(glove, tweet_text2)
                 network_result = get_classification(feature_vector1, feature_vector2)
                 results.append((tweetID1, tweetID2, network_result))
 
@@ -35,9 +40,8 @@ def generate(input_dir, output_dir):
         
         write_output_file(output_filename, results)
 
-def get_feature_vector(tweet_text):
-    # create feature vector for each tweet
-    return None
+def get_feature_vector(embed_dict, tweet_text):
+    return dataset_parser.createGlovefromTweet(embed_dict, tweet_text)
 
 def get_classification(feature_vector1, feature_vector2):
     # call network sexybarty707

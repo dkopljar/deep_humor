@@ -6,8 +6,40 @@ import re
 import nltk
 import numpy as np
 import pdb
+import char_mapper
+import constants
 
-
+def clear_tweet(tweet):
+    """
+    Clear given tweet from hashtags, mails, links...
+    :param tweet: Tweet
+    :return: cleared tweet
+    """
+    tweet = tweet
+    for word in tweet.split():
+        if word.startswith('#') or word.startswith('@') or word.startswith('.@') or word.startswith('http'):
+            tweet = tweet.replace(' ' + word, "") # if it is on the end
+            tweet = tweet.replace(word + ' ', "") # if it is on the begining
+    return tweet
+        
+def tweet_to_integer_vector(tweet):
+    """
+    Maps given tweet (it will lowercase it) to np.array of constants.TWEET_CHARACTER_COUNT dimension, 
+    with zeros as padding and ending vector with defined character (41)
+    :param tweet: Tweet
+    :return: Integer vector for given tweet
+    """
+    tweet = clear_tweet(tweet.lower())
+    vector = np.zeros(constants.TWEET_CHARACTER_COUNT, dtype=np.int)
+    last_index = 0
+    for index, character in enumerate(tweet):
+        last_index = index
+        if index == constants.TWEET_CHARACTER_COUNT - 1: # leave space for ending character
+            break
+        vector[index] = char_mapper.map_letter_to_int(character)
+    vector[last_index] = char_mapper.map_letter_to_int('end')
+    return vector
+        
 def loadGlove(glove_file):
     embed_dict = {}
 
@@ -132,7 +164,6 @@ def createGlovefromTweet(embed_dict, tweetText, embedding_dim=100,
     for j, token in enumerate(tokens[:timestep]):
         if token in embed_dict:
             sentenceRow[:, j] = embed_dict[token.lower()]
-    pdb.set_trace()
     return sentenceRow
 
 
@@ -227,8 +258,8 @@ def parse_data(glove_file,
     with open(pickleDir, "wb") as f:
         pickle.dump(topicsMatrix, f)
 
-glove = loadGlove("./resources/glove/glove.twitter.27B.100d.txt")
-createGlovefromTweet(glove, "Gugi is smart boy")
+# glove = loadGlove("./resources/glove/glove.twitter.27B.100d.txt")
+# createGlovefromTweet(glove, "Gugi is smart boy")
 
 #if __name__ == "__main__":
  #   prepare_dataset_for_taskB("./resources/glove/glove.twitter.27B.100d.txt",

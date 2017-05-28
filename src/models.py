@@ -82,7 +82,7 @@ class Net:
         logging.info("Evaluating on the validation set...")
         num_batches = input.shape[0] // self.batch_size
         input, labels = utils.shuffle_data([input, labels])
-        acc, prec, rec, f1 = 0, 0, 0, 0
+        acc, prec, rec, f1, loss_sum = 0, 0, 0, 0, 0
         for b in range(num_batches):
             word_b = input[
                      b * self.batch_size:(b + 1) * self.batch_size]
@@ -100,11 +100,13 @@ class Net:
             prec += p
             rec += r
             f1 += f
+            loss_sum += loss
 
         logging.info("Accuracy {:.3f}%".format(acc / num_batches * 100))
         logging.info("Macro Precision {:.3f}%".format(prec / num_batches * 100))
         logging.info("Macro Recall {:.3f}%".format(rec / num_batches * 100))
-        logging.info("Macro F1 {:.3f}%\n".format(f1 / num_batches * 100))
+        logging.info("Macro F1 {:.3f}%".format(f1 / num_batches * 100))
+        logging.info("Average loss {:.5f}\n".format(loss_sum / num_batches))
 
 
 class Baseline(Net):
@@ -388,8 +390,11 @@ class CNN_FC(Net):
         self.batch_size = config["batch_size"]
         self.model_name = config["domain"]
 
-        self.train_word = config['train_word']
-        self.valid_word = config['valid_word']
+        # TODO FIx naming
+        self.train_word = config['train_chr']
+        self.valid_word = config['valid_chr']
+        # self.train_char = config['train_chr']
+        # self.valid_char = config['valid_chr']
         self.train_label = config['train_label']
         self.valid_label = config['valid_label']
         self.num_epochs = config['train_epochs']
@@ -419,27 +424,28 @@ class CNN_FC(Net):
                 minval=-np.sqrt(3 / self.char_embedding_dim),
                 maxval=np.sqrt(3 / self.char_embedding_dim)),
             name="char_embedding")
+
+        # TODO fix this by seperating layers
         net = tf.nn.embedding_lookup(char_embed, self.word_embedding_input)
-        net = tf.layers.dropout(net, rate=0.5)
+        net = slim.dropout(net, keep_prob=0.5, scope="dropout1")
         net = tf.expand_dims(net, axis=3)
 
         # Network layers
         with slim.arg_scope([slim.conv2d, slim.fully_connected],
                             activation_fn=tf.nn.relu,
-                            weights_initializer=tf.truncated_normal_initializer(
-                                0.0, 0.01),
-                            weights_regularizer=slim.l2_regularizer(0.0005)):
+                            weights_initializer=tf.contrib.layers.xavier_initializer()):
             net = slim.repeat(net, 1, slim.conv2d, 32,
                               [self.char_timestep, 3], scope='conv1')
             net = slim.max_pool2d(net, [1, 2], scope='pool1')
 
             net = slim.repeat(net, 1, slim.conv2d, 64,
-                              [self.char_timestep, 5], scope='conv2')
+                              [self.char_timestep, 3], scope='conv2')
             net = slim.max_pool2d(net, [1, 2], scope='pool2')
 
             # FC layers
             net = slim.flatten(net, scope="flatten3")
-            net = slim.fully_connected(net, 512, scope='fc3')
+            net = slim.dropout(net, keep_prob=0.5, scope="dropout3")
+            net = slim.fully_connected(net, 256, scope='fc3')
             net = slim.dropout(net, keep_prob=0.5, scope="dropout4")
             logits = slim.fully_connected(net, self.n_classes,
                                           activation_fn=None,

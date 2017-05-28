@@ -5,6 +5,7 @@ import pickle
 
 import numpy as np
 
+import char_mapper
 import constants
 import dataset_parser
 import models
@@ -106,15 +107,11 @@ def main(config):
     config['train_label'] = y_train
     config['valid_label'] = y_dev
 
-    # TODO Change this
-    config['char_timestep'] = 100
-    config['char_vocab_size'] = 30
+    # +1 for unknown words
+    config['char_vocab_size'] = len(char_mapper.letter_to_int_dict) + 1
 
     net = models.CNN_FC(config)
     net.train()
-
-    # # Evaluate on the TEST set
-    # net.eval(y_test, y_train)
 
 
 if __name__ == "__main__":

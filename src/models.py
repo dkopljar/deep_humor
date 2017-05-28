@@ -60,12 +60,6 @@ class Net:
                      self.chr_embedding_input: char,
                      self.labels: label})
 
-            if (epoch) % 3 == 0:
-                # Save model every n epochs
-                path = saver.save(self.sess,
-                                  os.path.join(self.model_save_dir,
-                                               self.model_name + ".ckpt"),
-                                  global_step=self.global_step)
                 logging.info("Model saved at: " + str(path))
 
                 if (b + 1) % 15 == 0:
@@ -73,6 +67,13 @@ class Net:
                         "Iteration {}/{}, Batch Loss {:.4f}, LR: {:.4f}".format(
                             b * self.batch_size, num_batches * self.batch_size,
                             loss, lr))
+
+            if (epoch + 1) % 2 == 0:
+                # Save model every n epochs
+                path = saver.save(self.sess,
+                                  os.path.join(self.model_save_dir,
+                                               self.model_name + ".ckpt"),
+                                  global_step=self.global_step)
 
             self.eval(self.valid_word, self.valid_char, self.valid_label)
             logging.info("Finished epoch {}\n".format(epoch + 1))

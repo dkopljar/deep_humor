@@ -134,7 +134,7 @@ def main(config):
     # +1 for unknown words
     config['char_vocab_size'] = len(char_mapper.letter_to_int_dict) + 1
 
-    net = models.CNN_FC(config)
+    net = models.CNN_BILST_FC(config)
     net.train()
 
 

@@ -434,18 +434,17 @@ class CNN_FC(Net):
         with slim.arg_scope([slim.conv2d, slim.fully_connected],
                             activation_fn=tf.nn.relu,
                             weights_initializer=tf.contrib.layers.xavier_initializer()):
-            net = slim.repeat(net, 1, slim.conv2d, 32,
-                              [self.char_timestep, 3], scope='conv1')
+            net = slim.repeat(net, 2, slim.conv2d, 64,
+                              [self.char_timestep, 5], scope='conv1')
             net = slim.max_pool2d(net, [1, 2], scope='pool1')
 
-            net = slim.repeat(net, 1, slim.conv2d, 64,
+            net = slim.repeat(net, 1, slim.conv2d, 128,
                               [self.char_timestep, 3], scope='conv2')
-            net = slim.max_pool2d(net, [1, 2], scope='pool2')
+            net = slim.max_pool2d(net, [1, 4], scope='pool1')
 
             # FC layers
             net = slim.flatten(net, scope="flatten3")
-            net = slim.dropout(net, keep_prob=0.5, scope="dropout3")
-            net = slim.fully_connected(net, 256, scope='fc3')
+            net = slim.fully_connected(net, 512, scope='fc3')
             net = slim.dropout(net, keep_prob=0.5, scope="dropout4")
             logits = slim.fully_connected(net, self.n_classes,
                                           activation_fn=None,

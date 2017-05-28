@@ -2,6 +2,7 @@ import datetime
 import logging
 import os
 import pickle
+import pdb
 
 import numpy as np
 
@@ -60,22 +61,49 @@ def create_data_sets(pickle_dir, train_size=0.7):
     return train_data, dev_data
 
 
+def create_seperate_dataset(data, num_classes=3):
+    """
+    Creates dataset in a form: sentence_repr -> one_hot_humor_label
+    Shuffles the data before returning.
+    :param data: Train or dev data
+    :return: Shuffled word, char and labels
+    """
+    word_repr, char_repr, labels = [], [], []
+    for doc in data:
+        for sent in doc:
+            word_repr.append(sent[0])
+            char_repr.append(sent[1])
+            labels.append(utils.int_to_one_hot(int(sent[2]), num_classes))
+
+    word_repr, char_repr, labels = np.array(word_repr), \
+                                   np.array(char_repr, dtype=np.int32), \
+                                   np.array(labels)
+
+    return utils.shuffle_data([word_repr, char_repr, labels])
+
+
 def main(config):
     """
     :param config: Loaded configuration dictionary
     :return:
     """
-    config['n_classes'] = 2
+    config['n_classes'] = 3
 
     train_pickle_dir = os.path.join("data", "pickled", "pickled_train")
     if not os.path.exists(train_pickle_dir):
         print("Run `hybrid_vector_generator` script to generate train pickles.")
         return
 
-    train_data, dev_data = create_data_sets(train_pickle_dir)
+    train_data, dev_data = create_data_sets(train_pickle_dir,
+                                            train_size=0.85)
 
-    x_train_word, x_train_chr, y_train = create_data_pairs(train_data)
-    x_dev_word, x_dev_chr, y_dev = create_data_pairs(dev_data)
+    x_train_word, x_train_chr, y_train = create_seperate_dataset(train_data,
+                                                                 num_classes=
+                                                                 config[
+                                                                     'n_classes'])
+    x_dev_word, x_dev_chr, y_dev = create_seperate_dataset(dev_data,
+                                                           num_classes=config[
+                                                               'n_classes'])
 
     # Memory cleanup
     del train_data
@@ -85,10 +113,6 @@ def main(config):
     assert y_train.shape[1] == config['n_classes']
     assert x_train_chr.shape[1] == config['char_timestep'], x_train_chr.shape
     assert x_train_chr.shape[0] == y_train.shape[0] == x_train_word.shape[0]
-
-    # Shuffle intra train dataset
-    x_train_word, x_train_chr, y_train = utils.shuffle_data(
-        [x_train_word, x_train_chr, y_train])
 
     # Mock data
     config['train_examples'] = x_train_word.shape[0]

@@ -2,7 +2,6 @@ import datetime
 import logging
 import os
 import pickle
-import pdb
 
 import numpy as np
 
@@ -87,7 +86,7 @@ def main(config):
     :param config: Loaded configuration dictionary
     :return:
     """
-    config['n_classes'] = 3
+    config['n_classes'] = 2
 
     train_pickle_dir = os.path.join("data", "pickled", "pickled_train")
     if not os.path.exists(train_pickle_dir):
@@ -97,13 +96,8 @@ def main(config):
     train_data, dev_data = create_data_sets(train_pickle_dir,
                                             train_size=0.85)
 
-    x_train_word, x_train_chr, y_train = create_seperate_dataset(train_data,
-                                                                 num_classes=
-                                                                 config[
-                                                                     'n_classes'])
-    x_dev_word, x_dev_chr, y_dev = create_seperate_dataset(dev_data,
-                                                           num_classes=config[
-                                                               'n_classes'])
+    x_train_word, x_train_chr, y_train = create_data_pairs(train_data)
+    x_dev_word, x_dev_chr, y_dev = create_data_pairs(dev_data)
 
     # Memory cleanup
     del train_data
@@ -111,7 +105,7 @@ def main(config):
 
     assert x_train_word.shape[2] == config['timestep']
     assert y_train.shape[1] == config['n_classes']
-    assert x_train_chr.shape[1] == config['char_timestep'], x_train_chr.shape
+    assert x_train_chr.shape[1] == config['char_timestep']
     assert x_train_chr.shape[0] == y_train.shape[0] == x_train_word.shape[0]
 
     # Mock data
@@ -141,7 +135,7 @@ def main(config):
 if __name__ == "__main__":
     seed = 1337
     np.random.seed(seed)
-    config = utils.read_config(os.path.join(constants.CONFIGS, "cnn.ini"))
+    config = utils.read_config(os.path.join(constants.CONFIGS, "cnn_lstm.ini"))
 
     # Setup logging
     utils.dir_creator([constants.LOGS, constants.TF_WEIGHTS])

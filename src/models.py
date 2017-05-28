@@ -60,6 +60,14 @@ class Net:
                      self.chr_embedding_input: char,
                      self.labels: label})
 
+            if (epoch) % 3 == 0:
+                # Save model every n epochs
+                path = saver.save(self.sess,
+                                  os.path.join(self.model_save_dir,
+                                               self.model_name + ".ckpt"),
+                                  global_step=self.global_step)
+                logging.info("Model saved at: " + str(path))
+
                 if (b + 1) % 15 == 0:
                     logging.info(
                         "Iteration {}/{}, Batch Loss {:.4f}, LR: {:.4f}".format(
@@ -68,14 +76,6 @@ class Net:
 
             self.eval(self.valid_word, self.valid_char, self.valid_label)
             logging.info("Finished epoch {}\n".format(epoch + 1))
-
-            if (epoch + 1) % 3 == 0:
-                # Save model every n epochs
-                path = saver.save(self.sess,
-                                  os.path.join(self.model_save_dir,
-                                               self.model_name + ".ckpt"),
-                                  global_step=self.global_step)
-                logging.info("Model saved at: " + str(path))
 
     def eval(self, input, input_chr, labels):
         """
@@ -86,7 +86,8 @@ class Net:
         """
         logging.info("Evaluating on the validation set...")
         num_batches = input.shape[0] // self.batch_size
-        input,input_chr, labels = utils.shuffle_data([input,input_chr, labels])
+        input, input_chr, labels = utils.shuffle_data(
+            [input, input_chr, labels])
         acc, prec, rec, f1, loss_sum = 0, 0, 0, 0, 0
         for b in range(num_batches):
             word_b = input[
@@ -432,7 +433,7 @@ class CNN_BILST_FC(Net):
 
         self.chr_embedding_input = tf.placeholder(tf.int32,
                                                   (None, self.char_timestep),
-                                                  name="input_chr")
+                                                  name="input_char")
         self.labels = tf.placeholder(tf.int32, (None, self.n_classes))
 
         # Char embedding layer
@@ -470,9 +471,9 @@ class CNN_BILST_FC(Net):
             'out': tf.Variable(
                 tf.random_uniform([2 * self.lstm_hidden, weights_output_dim],
                                   minval=-np.sqrt(6 / (
-                                      2 * self.lstm_hidden + self.n_classes)),
+                                      2 * self.lstm_hidden + weights_output_dim)),
                                   maxval=np.sqrt(6 / (
-                                      2 * self.lstm_hidden + self.n_classes)))
+                                      2 * self.lstm_hidden + weights_output_dim)))
             )
         }
         biases = {
@@ -492,9 +493,10 @@ class CNN_BILST_FC(Net):
                                                  cell_bw=lstm_bw_cell,
                                                  inputs=net,
                                                  dtype=tf.float32)
+
         # Linear activation, using rnn inner loop on the final output
-        net_rnn = slim.flatten(
-            tf.matmul(net[-1], weights['out']) + biases['out'])
+        net_rnn = slim.flatten(slim.dropout(
+            tf.matmul(net[-1], weights['out']) + biases['out'], keep_prob=0.5))
 
         # Merge CNN and RNN features
         net = tf.concat([net_cnn, net_rnn], axis=1)

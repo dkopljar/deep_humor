@@ -60,7 +60,6 @@ class Net:
                      self.chr_embedding_input: char,
                      self.labels: label})
 
-                logging.info("Model saved at: " + str(path))
 
                 if (b + 1) % 15 == 0:
                     logging.info(
@@ -74,6 +73,7 @@ class Net:
                                   os.path.join(self.model_save_dir,
                                                self.model_name + ".ckpt"),
                                   global_step=self.global_step)
+                logging.info("Model saved at: " + str(path))
 
             self.eval(self.valid_word, self.valid_char, self.valid_label)
             logging.info("Finished epoch {}\n".format(epoch + 1))
@@ -455,17 +455,17 @@ class CNN_BILST_FC(Net):
                             activation_fn=tf.nn.relu,
                             weights_initializer=tf.contrib.layers.xavier_initializer()):
             net = slim.repeat(net, 1, slim.conv2d, 64,
-                              [self.char_timestep, 3], scope='conv1')
+                              [self.char_timestep, 5], scope='conv1')
             net = slim.max_pool2d(net, [1, 2], scope='pool1')
 
-            net = slim.repeat(net, 1, slim.conv2d, 128,
+            net = slim.repeat(net, 1, slim.conv2d, 64,
                               [self.char_timestep, 3], scope='conv2')
             net = slim.max_pool2d(net, [1, 2], scope='pool1')
 
             # FC layers
             net_cnn = slim.flatten(net, scope="flatten3")
 
-        weights_output_dim = 300
+        weights_output_dim = 100
         weights = {
             # Hidden layer weights => 2*n_hidden because of forward +
             # backward cells

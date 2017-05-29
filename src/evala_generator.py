@@ -9,12 +9,13 @@ from random import randint
 
 import constants
 import dataset_parser
-
+import numpy as np
 
 def generate(input_dir, output_dir):
     glove = dataset_parser.loadGlove(constants.GLOVE_PATH)
     print("loaded glove file")
 
+    model = None
     input_files = os.listdir(input_dir)
     target_hashtags = [os.path.splitext(gf)[0] for gf in input_files]
     print('Target hashtags: {} ({})'.format(len(target_hashtags),
@@ -33,10 +34,14 @@ def generate(input_dir, output_dir):
                 if tweetID1 == tweetID2:
                     continue
 
-                feature_vector1 = get_feature_vector(glove, tweet_text1)
-                feature_vector2 = get_feature_vector(glove, tweet_text2)
-                network_result = get_classification(feature_vector1,
-                                                    feature_vector2)
+                word_vect1, char_vect1 = get_feature_vector(glove, tweet_text1)
+                word_vect2, char_vect2 = get_feature_vector(glove, tweet_text2)
+                word_merged = np.concatenate((word_vect1, word_vect2), axis=1)
+                char_merged = np.concatenate((char_vect1, char_vect2), axis=0)
+
+                network_result = get_classification(model,
+                                                    word_merged,
+                                                    char_merged)
                 results.append((tweetID1, tweetID2, network_result))
 
             index += 1
@@ -45,10 +50,10 @@ def generate(input_dir, output_dir):
 
 
 def get_feature_vector(embed_dict, tweet_text):
-    return dataset_parser.createGlovefromTweet(embed_dict, tweet_text)
+    return (dataset_parser.createGlovefromTweet(embed_dict, tweet_text),
+            dataset_parser.tweet_to_integer_vector(tweet_text))
 
-
-def get_classification(feature_vector1, feature_vector2):
+def get_classification(model, word_merged, char_merged):
     # call network sexybarty707
     return randint(0, 1)
 

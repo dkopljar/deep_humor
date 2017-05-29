@@ -1,4 +1,3 @@
-import logging
 import os
 import time
 
@@ -30,7 +29,7 @@ class Model:
         self.input_op_char = graph.get_tensor_by_name(input_char_op_name)
         self.input_op_word = graph.get_tensor_by_name(input_word_op_name)
 
-        logging.info("Model restored from " + model_path)
+        print("Model restored from " + model_path)
 
     def predict(self, input_word, input_char):
         """
@@ -52,7 +51,7 @@ class Model:
 
 if __name__ == "__main__":
     # Example of usage
-    path = os.path.join(constants.TF_WEIGHTS, "word_glove_100_lstm.ckpt-967")
+    path = os.path.join(constants.TF_WEIGHTS, "CNN_BILSTM_FC_model.ckpt-1320")
     model = Model(path)
 
     start = time.time()

@@ -15,7 +15,8 @@ def generate(input_dir, output_dir):
     glove = dataset_parser.loadGlove(constants.GLOVE_PATH)
     print("loaded glove file")
 
-    model = model_evaluation.Model(constants.TF_WEIGHTS, "") # TODO
+    model = model_evaluation.Model(os.path.join(constants.TF_WEIGHTS,
+                                   "CNN_BILSTM_FC_model.ckpt-1320"))  # TODO
     input_files = os.listdir(input_dir)
     target_hashtags = [os.path.splitext(gf)[0] for gf in input_files]
     print('Target hashtags: {} ({})'.format(len(target_hashtags), ', '.join(target_hashtags)))

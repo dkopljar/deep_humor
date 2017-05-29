@@ -19,7 +19,7 @@ def clear_tweet(tweet):
     tweet = tweet
     for word in tweet.split():
         if word.startswith('@') or word.startswith(
-                '.@') or word.startswith('http'):
+                '.@') or word.startswith('http') or word.startswith('#'):
             tweet = tweet.replace(' ' + word, "")  # if it is on the end
             tweet = tweet.replace(word + ' ', "")  # if it is on the begining
     return tweet

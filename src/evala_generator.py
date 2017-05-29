@@ -10,12 +10,13 @@ from random import randint
 import constants
 import dataset_parser
 import numpy as np
+import model_evaluation
 
 def generate(input_dir, output_dir):
     glove = dataset_parser.loadGlove(constants.GLOVE_PATH)
     print("loaded glove file")
 
-    model = None
+    model = model_evaluation.Model(constants.TF_WEIGHTS, "") # TODO
     input_files = os.listdir(input_dir)
     target_hashtags = [os.path.splitext(gf)[0] for gf in input_files]
     print('Target hashtags: {} ({})'.format(len(target_hashtags),
@@ -54,9 +55,7 @@ def get_feature_vector(embed_dict, tweet_text):
             dataset_parser.tweet_to_integer_vector(tweet_text))
 
 def get_classification(model, word_merged, char_merged):
-    # call network sexybarty707
-    return randint(0, 1)
-
+    return 1 - model.predict(word_merged, char_merged)
 
 def load_input_file(filename):
     tweets_list = []

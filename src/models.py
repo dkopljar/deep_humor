@@ -445,9 +445,8 @@ class CNN_BILST_FC(Net):
                 maxval=np.sqrt(3 / self.char_embedding_dim)),
             name="char_embedding")
 
-        # TODO fix this by seperating layers
         net = tf.nn.embedding_lookup(char_embed, self.chr_embedding_input)
-        net = slim.dropout(net, keep_prob=0.5, scope="dropout1")
+        net = slim.dropout(net, keep_prob=0.2, scope="dropout1")
         net = tf.expand_dims(net, axis=3)
 
         # Network layers
@@ -497,14 +496,14 @@ class CNN_BILST_FC(Net):
 
         # Linear activation, using rnn inner loop on the final output
         net_rnn = slim.flatten(slim.dropout(
-            tf.matmul(net[-1], weights['out']) + biases['out'], keep_prob=0.5))
+            tf.matmul(net[-1], weights['out']) + biases['out'], keep_prob=0.2))
 
         # Merge CNN and RNN features
         net = tf.concat([net_cnn, net_rnn], axis=1)
 
         # FC layers
         net = slim.fully_connected(net, 512, scope='fc3')
-        net = slim.dropout(net, keep_prob=0.5, scope="dropout4")
+        net = slim.dropout(net, keep_prob=0.2, scope="dropout4")
 
         logits = slim.fully_connected(net, self.n_classes,
                                       activation_fn=None,

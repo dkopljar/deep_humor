@@ -144,7 +144,6 @@ def createGlovefromTweet(embed_dict, tweetText, embedding_dim=100,
     :param tweetText: Tweeter text
 
     """
-    tweetText = clear_tweet(tweetText)
     tokens = nltk.word_tokenize(tweetText)
     tokens = [word.lower() for word in tokens]
     sentenceRow = np.zeros((embedding_dim, timestep))

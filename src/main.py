@@ -5,6 +5,7 @@ import pickle
 
 import numpy as np
 
+import char_mapper
 import constants
 import dataset_parser
 import models
@@ -15,13 +16,69 @@ def create_data_pairs(topics_matrix):
     """
     Create data pair combinations
     """
-    X, y = [], []
+    X_words, X_chars, y = [], [], []
     for topic in topics_matrix:
-        comb_m, comb_l = dataset_parser.create_pair_combs(topic)
-        X.extend(comb_m)
+        comb_m, comb_chr, comb_l = dataset_parser.create_pair_combs(topic)
+        X_words.extend(comb_m)
+        X_chars.extend(comb_chr)
         y.extend(
             [utils.int_to_one_hot(x, config['n_classes']) for x in comb_l])
-    return np.array(X, dtype=np.float32), np.array(y, dtype=np.uint8)
+    return np.array(X_words, dtype=np.float32), \
+           np.array(X_chars, dtype=np.int32), \
+           np.array(y, dtype=np.uint8)
+
+
+def create_data_sets(pickle_dir, train_size=0.7):
+    """
+    Loads, splits and mergers the training and development datasets from
+    the pickle files. Processed word_vector, char_vector and label tuples are
+    stored into two seperate lists, one for training, and the second one for
+    development
+
+    :param train_size: Percentage of train set size (in terms of number of
+     documents)
+    :param pickle_dir: Training data pickle dir
+    :return List of training data, List of development data tuple
+    """
+    files = os.listdir(pickle_dir)
+    np.random.shuffle(files)
+    train_size_int = int(len(files) * train_size)
+
+    train, dev = files[:train_size_int], files[train_size_int:]
+
+    train_data, dev_data = [], []
+    for train_f in train:
+        file_path = os.path.join(pickle_dir, train_f)
+        with open(file_path, "rb") as f:
+            train_data.append(pickle.load(f))
+
+    for dev_f in dev:
+        file_path = os.path.join(pickle_dir, dev_f)
+        with open(file_path, "rb") as f:
+            dev_data.append(pickle.load(f))
+
+    return train_data, dev_data
+
+
+def create_seperate_dataset(data, num_classes=3):
+    """
+    Creates dataset in a form: sentence_repr -> one_hot_humor_label
+    Shuffles the data before returning.
+    :param data: Train or dev data
+    :return: Shuffled word, char and labels
+    """
+    word_repr, char_repr, labels = [], [], []
+    for doc in data:
+        for sent in doc:
+            word_repr.append(sent[0])
+            char_repr.append(sent[1])
+            labels.append(utils.int_to_one_hot(int(sent[2]), num_classes))
+
+    word_repr, char_repr, labels = np.array(word_repr), \
+                                   np.array(char_repr, dtype=np.int32), \
+                                   np.array(labels)
+
+    return utils.shuffle_data([word_repr, char_repr, labels])
 
 
 def main(config):
@@ -30,29 +87,30 @@ def main(config):
     :return:
     """
     config['n_classes'] = 2
-    pickle_pairs = os.path.join(constants.DATA, "pickled",
-                                "train_pairs.pkl")
-    with open(pickle_pairs, "rb") as f:
-        topicsMatrix = pickle.load(f)
-    print("Creating data pairs")
-    X, y = create_data_pairs(topicsMatrix)
 
-    assert X.shape[2] == config['timestep']
-    assert y.shape[1] == config['n_classes']
+    train_pickle_dir = os.path.join("data", "pickled", "pickled_train")
+    if not os.path.exists(train_pickle_dir):
+        print("Run `hybrid_vector_generator` script to generate train pickles.")
+        return
 
-    # First we split and then we shuffle
-    # Must be in this order because we want to have examples from unseen
-    # topics
-    x_train, x_valid, x_test, y_train, y_valid, y_test = utils.split_data(X, y)
+    train_data, dev_data = create_data_sets(train_pickle_dir,
+                                            train_size=0.85)
 
-    x_train, y_train = utils.shuffle_data(x_train, y_train)
-    x_valid, y_valid = utils.shuffle_data(x_valid, y_valid)
-    x_test, y_test = utils.shuffle_data(x_test, y_test)
+    x_train_word, x_train_chr, y_train = create_data_pairs(train_data)
+    x_dev_word, x_dev_chr, y_dev = create_data_pairs(dev_data)
+
+    # Memory cleanup
+    del train_data
+    del dev_data
+
+    assert x_train_word.shape[2] == config['timestep']
+    assert y_train.shape[1] == config['n_classes']
+    assert x_train_chr.shape[1] == config['char_timestep']
+    assert x_train_chr.shape[0] == y_train.shape[0] == x_train_word.shape[0]
 
     # Mock data
-    config['train_examples'] = x_train.shape[0]
-    config['validation_examples'] = x_valid.shape[0]
-    config['test_examples'] = x_test.shape[0]
+    config['train_examples'] = x_train_word.shape[0]
+    config['validation_examples'] = x_dev_word.shape[0]
     config['save_dir'] = os.path.join(constants.TF_WEIGHTS)
 
     # Log configuration
@@ -60,22 +118,24 @@ def main(config):
     logging.info("\n".join([k + ": " + str(v) for k, v in config.items()]))
 
     # Add datasets to config
-    config['train_word'] = x_train
-    config['valid_word'] = x_valid
+    config['train_word'] = x_train_word
+    config['valid_word'] = x_dev_word
+    config['train_chr'] = x_train_chr
+    config['valid_chr'] = x_dev_chr
     config['train_label'] = y_train
-    config['valid_label'] = y_valid
+    config['valid_label'] = y_dev
 
-    net = models.BILSTM_FC(config)
+    # +1 for unknown words
+    config['char_vocab_size'] = len(char_mapper.letter_to_int_dict) + 1
+
+    net = models.CNN_BILST_FC(config)
     net.train()
-
-    # # Evaluate on the TEST set
-    # net.eval(y_test, y_train)
 
 
 if __name__ == "__main__":
     seed = 1337
     np.random.seed(seed)
-    config = utils.read_config(os.path.join(constants.CONFIGS, "word_lstm.ini"))
+    config = utils.read_config(os.path.join(constants.CONFIGS, "cnn_lstm.ini"))
 
     # Setup logging
     utils.dir_creator([constants.LOGS, constants.TF_WEIGHTS])

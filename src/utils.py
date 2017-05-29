@@ -43,10 +43,10 @@ def read_config(config_file):
     conf_dict['char_embeddings_dim'] = int(
         config["MODEL"]['character embeddings dimension'])
     conf_dict['max_word_size'] = int(config["MODEL"]['max word length'])
-    conf_dict['filter_dim'] = int(config["MODEL"]['cnn filter dimension'])
     conf_dict['lstm_hidden'] = int(config["MODEL"]['lstm hidden state dim'])
     conf_dict['batch_size'] = int(config["MODEL"]['batch size'])
     conf_dict['domain'] = config["GENERAL"]['domain']
+    conf_dict['char_timestep'] = int(config["MODEL"]['char timestep'])
     conf_dict['train_epochs'] = int(config["GENERAL"]['training epochs'])
 
     return conf_dict
@@ -119,10 +119,16 @@ def int_to_one_hot(input, num_classes):
     return x
 
 
-def shuffle_data(input, labels):
-    indices = np.arange(len(input), dtype=np.int32)
+def shuffle_data(data):
+    """
+    Shuffles arbitrary number of data lists
+    :param data: List of array which are logically connected and need to be
+    shuffled so the order is preserved
+    :return: List of shuffled arrays
+    """
+    indices = np.arange(len(data[0]), dtype=np.int32)
     np.random.shuffle(indices)
-    return input[indices], labels[indices]
+    return [x[indices] for x in data]
 
 
 def split_data(input, labels, test_size=0.4):

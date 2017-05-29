@@ -18,8 +18,8 @@ def clear_tweet(tweet):
     """
     tweet = tweet
     for word in tweet.split():
-        if word.startswith('#') or word.startswith('@') or word.startswith(
-                '.@') or word.startswith('http'):
+        if word.startswith('@') or word.startswith(
+                '.@') or word.startswith('http') or word.startswith('#'):
             tweet = tweet.replace(' ' + word, "")  # if it is on the end
             tweet = tweet.replace(word + ' ', "")  # if it is on the begining
     return tweet
@@ -56,26 +56,6 @@ def loadGlove(glove_file):
             embed_dict[token] = vec
 
     return embed_dict
-
-
-def filterText(tweets):
-    """
-     Removes unnecessary data from the tweet such as extra hashtags, links...
-    :param tweets: List of all tweets
-    :return:
-    """
-    result = []
-    for tweet in tweets:
-        filtered = []
-        for token in tweet:
-            if (not (token.startswith('#') or token.startswith(
-                    '@') or token.startswith('.@') or token.startswith(
-                'http'))):
-                filtered.append(token)
-        while filtered.__contains__(''):
-            filtered.remove('')
-        result.append(filtered)
-    return result
 
 
 def read_file_by_line_and_tokenize(file_path):
@@ -164,7 +144,6 @@ def createGlovefromTweet(embed_dict, tweetText, embedding_dim=100,
     :param tweetText: Tweeter text
 
     """
-    tweetText=clear_tweet(tweetText)
     tokens = nltk.word_tokenize(tweetText)
     tokens = [word.lower() for word in tokens]
     sentenceRow = np.zeros((embedding_dim, timestep))

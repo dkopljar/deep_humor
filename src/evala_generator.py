@@ -18,7 +18,7 @@ def generate(input_dir, output_dir):
     print("loaded glove file")
 
     model = model_evaluation.Model(os.path.join(constants.TF_WEIGHTS,
-                                   "CNN_BILSTM_FC_model.ckpt-1320"))  # TODO
+                                                "CNN_BILSTM_FC_model.ckpt-1320"))  # TODO
     input_files = os.listdir(input_dir)
     target_hashtags = [os.path.splitext(gf)[0] for gf in input_files]
     print('Target hashtags: {} ({})'.format(len(target_hashtags),
@@ -32,6 +32,7 @@ def generate(input_dir, output_dir):
         results = []
         # make tweet combinations and get result
         index = 1
+        ind = 0
         for tweetID1, tweet_text1 in tweets:
             for tweetID2, tweet_text2 in tweets[index:]:
                 if tweetID1 == tweetID2:
@@ -47,6 +48,11 @@ def generate(input_dir, output_dir):
                                                     char_merged)
                 results.append((tweetID1, tweetID2, network_result))
 
+                if ind % 2000 == 0:
+                    print("{}/{}".format(ind,
+                                         len(tweets) * (len(tweets) - 1) / 2))
+                ind += 1
+
             index += 1
 
         write_output_file(output_filename, results)
@@ -58,7 +64,7 @@ def get_feature_vector(embed_dict, tweet_text):
 
 
 def get_classification(model, word_merged, char_merged):
-    return 1 - model.predict(word_merged, char_merged)
+    return model.predict(word_merged, char_merged)
 
 
 def load_input_file(filename):

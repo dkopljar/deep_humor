@@ -62,7 +62,7 @@ def get_feature_vector(embed_dict, tweet_text):
             dataset_parser.tweet_to_integer_vector(tweet_text))
 
 def get_classification(model, word_merged, char_merged):
-    return 1 - model.predict(word_merged, char_merged)
+    return model.predict(word_merged, char_merged)
 
 def load_input_file(filename):
     tweets_list = []

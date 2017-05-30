@@ -47,6 +47,7 @@ def read_config(config_file):
     conf_dict['batch_size'] = int(config["MODEL"]['batch size'])
     conf_dict['domain'] = config["GENERAL"]['domain']
     conf_dict['char_timestep'] = int(config["MODEL"]['char timestep'])
+    conf_dict['early_stopping'] = int(config["MODEL"]['early stopping'])
     conf_dict['train_epochs'] = int(config["GENERAL"]['training epochs'])
 
     return conf_dict

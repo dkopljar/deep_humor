@@ -17,7 +17,7 @@ def generate(input_dir, output_dir):
     print("loaded glove file")
 
     model = model_evaluation.ModelEvaluator(os.path.join(constants.TF_WEIGHTS,
-                                                         "CNN_BILSTM_FC_model.ckpt-1320"))
+                                                         "CNN_BILSTM_FC_model_v_loss_0.594036339069.ckpt"))
     input_files = os.listdir(input_dir)
     target_hashtags = [os.path.splitext(gf)[0] for gf in input_files]
     print('Target hashtags: {} ({})'.format(len(target_hashtags),

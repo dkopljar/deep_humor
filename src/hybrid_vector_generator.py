@@ -35,9 +35,9 @@ def generate(train_dir, output_dir):
         data = []
         for tweet_id, tweet_text, tweet_level in tweets:
             word_vector = get_word_vector(glove, tweet_text,
-                                          timestep=20)
+                                          timestep=15)
             char_vector = get_char_vector(tweet_text,
-                                          tweet_char_count=55)
+                                          tweet_char_count=50)
             data.append((word_vector, char_vector, tweet_level))
 
         write_output_file(output_filename, data)

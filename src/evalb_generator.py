@@ -10,6 +10,9 @@ import numpy as np
 import constants
 import dataset_parser
 import model_evaluation
+import utils
+
+config = utils.read_config(constants.CONFIGS)
 
 
 def generate(input_dir, output_dir):
@@ -63,8 +66,11 @@ def increase_counter(dictionary, key):
 
 
 def get_feature_vector(embed_dict, tweet_text):
-    return (dataset_parser.createGlovefromTweet(embed_dict, tweet_text),
-            dataset_parser.tweet_to_integer_vector(tweet_text))
+    return (dataset_parser.createGlovefromTweet(embed_dict, tweet_text,
+                                                timestep=config['timestep']),
+            dataset_parser.tweet_to_integer_vector(tweet_text,
+                                                   tweet_char_count=config[
+                                                       'char_timestep']))
 
 
 def get_classification(model, word_merged, char_merged):

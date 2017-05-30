@@ -25,7 +25,7 @@ class Net:
         """
         saver = tf.train.Saver()
         saver.restore(self.sess, model_path)
-        logging.info("ModelEvaluator restored from " + model_path)
+        logging.info("Model restored from " + model_path)
 
     def train(self):
         """
@@ -70,6 +70,7 @@ class Net:
                         "Iteration {}/{}, Batch Loss {:.4f}, LR: {:.4f}".format(
                             b * self.batch_size, num_batches * self.batch_size,
                             loss, lr))
+
 
             current_val_loss = self.eval(self.valid_word,
                                          self.valid_char,
@@ -129,9 +130,9 @@ class Net:
             loss_sum += loss
 
         logging.info("Accuracy {:.3f}%".format(acc / num_batches * 100))
-        logging.info("Macro Precision {:.3f}%".format(prec / num_batches * 100))
-        logging.info("Macro Recall {:.3f}%".format(rec / num_batches * 100))
-        logging.info("Macro F1 {:.3f}%".format(f1 / num_batches * 100))
+        logging.info("Weighted Macro Precision {:.3f}%".format(prec / num_batches * 100))
+        logging.info("Weighted Macro Recall {:.3f}%".format(rec / num_batches * 100))
+        logging.info(" Weighted Macro F1 {:.3f}%".format(f1 / num_batches * 100))
         logging.info("Average loss {:.5f}\n".format(loss_sum / num_batches))
 
         return loss_sum / num_batches
@@ -234,7 +235,7 @@ class BILSTM_FC(Net):
                                             (None, self.word_embd_vec),
                                             name="labels")
         # POS tags encoded in one-hot fashion (batch_size, num_classes)
-        self.labels = tf.placeholder(tf.int32, (None, self.n_classes))
+        self.labels = tf.placeholder(tf.float32, (None, self.n_classes))
 
         # BI-BILSTM
         # Define weights for the Bi-directional BILSTM
@@ -426,6 +427,7 @@ class CNN_BILST_FC(Net):
         self.train_examples = config["train_examples"]
         self.batch_size = config["batch_size"]
         self.model_name = config["domain"]
+        self.dropout = config["dropout"]
         self.early_stop_threshold = config['early_stopping']
 
         self.train_word = config['train_word']
@@ -467,7 +469,7 @@ class CNN_BILST_FC(Net):
             name="char_embedding")
 
         net = tf.nn.embedding_lookup(char_embed, self.chr_embedding_input)
-        net = slim.dropout(net, keep_prob=0.4, scope="dropout1")
+        net = slim.dropout(net, keep_prob=self.dropout, scope="dropout1")
         net = tf.expand_dims(net, axis=3)
 
         # Network layers
@@ -485,7 +487,7 @@ class CNN_BILST_FC(Net):
             # FC layers
             net_cnn = slim.flatten(net, scope="flatten3")
 
-        weights_output_dim = 300
+        weights_output_dim = 200
         weights = {
             # Hidden layer weights => 2*n_hidden because of forward +
             # backward cells
@@ -517,14 +519,15 @@ class CNN_BILST_FC(Net):
 
         # Linear activation, using rnn inner loop on the final output
         net_rnn = slim.flatten(slim.dropout(
-            tf.matmul(net[-1], weights['out']) + biases['out'], keep_prob=0.4))
+            tf.matmul(net[-1], weights['out']) + biases['out'],
+            keep_prob=self.dropout))
 
         # Merge CNN and RNN features
         net = tf.concat([net_cnn, net_rnn], axis=1)
 
         # FC layers
         net = slim.fully_connected(net, 512, scope='fc3')
-        net = slim.dropout(net, keep_prob=0.4, scope="dropout4")
+        net = slim.dropout(net, keep_prob=self.dropout, scope="dropout4")
 
         logits = slim.fully_connected(net, self.n_classes,
                                       activation_fn=None,

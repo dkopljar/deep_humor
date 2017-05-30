@@ -53,12 +53,12 @@ def load_input_file(filename):
     return tweets_list
 
 
-def get_word_vector(embed_dict, tweet_text):
-    return dataset_parser.createGlovefromTweet(embed_dict, tweet_text)
+def get_word_vector(embed_dict, tweet_text,embedding_dim=100,timestep=25):
+    return dataset_parser.createGlovefromTweet(embed_dict, tweet_text,embedding_dim,timestep)
 
 
-def get_char_vector(tweet_text):
-    return dataset_parser.tweet_to_integer_vector(tweet_text)
+def get_char_vector(tweet_text,tweet_char_count):
+    return dataset_parser.tweet_to_integer_vector(tweet_text,tweet_char_count)
 
 
 def write_output_file(filename, data):

@@ -7,7 +7,6 @@ import nltk
 import numpy as np
 
 import char_mapper
-import constants
 
 
 def clear_tweet(tweet):
@@ -25,7 +24,7 @@ def clear_tweet(tweet):
     return tweet
 
 
-def tweet_to_integer_vector(tweet,tweet_char_count=70):
+def tweet_to_integer_vector(tweet, tweet_char_count=70):
     """
     Maps given tweet (it will lowercase it) to np.array of constants.TWEET_CHARACTER_COUNT dimension, 
     with zeros as padding and ending vector with defined character (41)
@@ -151,8 +150,7 @@ def createGlovefromTweet(embed_dict, tweetText, embedding_dim=100,
         if token in embed_dict:
             sentenceRow[:, j] = embed_dict[token.lower()]
         else:
-            tmp = np.zeros(embedding_dim)
-            tmp.fill(1.0/5)
+            tmp = np.ones(embedding_dim) / 20
             sentenceRow[:, j] = tmp
     return sentenceRow
 

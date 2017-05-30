@@ -13,7 +13,8 @@ import dataset_parser
 import model_evaluation
 import utils
 
-config = utils.read_config(constants.CONFIGS)
+config = utils.read_config(os.path.join(constants.CONFIGS, "cnn_lstm.ini"))
+
 
 
 def generate(input_dir, output_dir):

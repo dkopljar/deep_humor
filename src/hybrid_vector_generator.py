@@ -13,7 +13,9 @@ import sys
 import constants
 import dataset_parser
 import utils
-config = utils.read_config(constants.CONFIGS)
+
+config = utils.read_config(os.path.join(constants.CONFIGS, "cnn_lstm.ini"))
+
 
 def generate(train_dir, output_dir):
     if not os.path.exists(output_dir):
@@ -56,11 +58,13 @@ def load_input_file(filename):
 
 def get_word_vector(embed_dict, tweet_text):
     return dataset_parser.createGlovefromTweet(embed_dict, tweet_text,
-                                               config["word_vector_dim"], config["timestep"])
+                                               config["word_vector_dim"],
+                                               config["timestep"])
 
 
 def get_char_vector(tweet_text):
-    return dataset_parser.tweet_to_integer_vector(tweet_text, config["char_timestep"])
+    return dataset_parser.tweet_to_integer_vector(tweet_text,
+                                                  config["char_timestep"])
 
 
 def write_output_file(filename, data):

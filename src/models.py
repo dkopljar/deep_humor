@@ -452,11 +452,11 @@ class CNN_BILST_FC(Net):
 
         self.word_embedding_input = tf.placeholder(tf.float32,
                                                    (None, self.word_embd_vec,
-                                                    self.timestep),
+                                                    self.timestep * 2),
                                                    name="input_word")
 
         self.chr_embedding_input = tf.placeholder(tf.int32,
-                                                  (None, self.char_timestep),
+                                                  (None, self.char_timestep * 2),
                                                   name="input_char")
         self.labels = tf.placeholder(tf.int32, (None, self.n_classes))
 

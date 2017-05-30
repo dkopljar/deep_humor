@@ -480,14 +480,14 @@ class CNN_BILST_FC(Net):
                               [self.char_timestep, 5], scope='conv1')
             net = slim.max_pool2d(net, [1, 4], scope='pool1')
 
-            net = slim.repeat(net, 1, slim.conv2d, 128,
+            net = slim.repeat(net, 1, slim.conv2d, 64,
                               [self.char_timestep, 3], scope='conv2')
             net = slim.max_pool2d(net, [1, 2], scope='pool2')
 
             # FC layers
             net_cnn = slim.flatten(net, scope="flatten3")
 
-        weights_output_dim = 200
+        weights_output_dim = 150
         weights = {
             # Hidden layer weights => 2*n_hidden because of forward +
             # backward cells

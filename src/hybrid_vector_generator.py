@@ -1,3 +1,8 @@
+"""
+Generates intermediary pickle files that consist of (word_vector, char_vector,
+label) triplets.
+"""
+
 from __future__ import print_function, absolute_import, division
 
 import csv
@@ -29,8 +34,10 @@ def generate(train_dir, output_dir):
 
         data = []
         for tweet_id, tweet_text, tweet_level in tweets:
-            word_vector = get_word_vector(glove, tweet_text)
-            char_vector = get_char_vector(tweet_text)
+            word_vector = get_word_vector(glove, tweet_text,
+                                          timestep=25)
+            char_vector = get_char_vector(tweet_text,
+                                          tweet_char_count=80)
             data.append((word_vector, char_vector, tweet_level))
 
         write_output_file(output_filename, data)
@@ -48,12 +55,13 @@ def load_input_file(filename):
     return tweets_list
 
 
-def get_word_vector(embed_dict, tweet_text):
-    return dataset_parser.createGlovefromTweet(embed_dict, tweet_text)
+def get_word_vector(embed_dict, tweet_text, embedding_dim=100, timestep=25):
+    return dataset_parser.createGlovefromTweet(embed_dict, tweet_text,
+                                               embedding_dim, timestep)
 
 
-def get_char_vector(tweet_text):
-    return dataset_parser.tweet_to_integer_vector(tweet_text)
+def get_char_vector(tweet_text, tweet_char_count=70):
+    return dataset_parser.tweet_to_integer_vector(tweet_text, tweet_char_count)
 
 
 def write_output_file(filename, data):

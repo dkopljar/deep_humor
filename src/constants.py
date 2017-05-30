@@ -22,4 +22,3 @@ LOGS = os.path.join(RSC, "logs")
 
 CONFIGS = os.path.join(ROOT, "configs")
 
-TWEET_CHARACTER_COUNT = 70

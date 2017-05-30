@@ -86,7 +86,7 @@ def main(config):
     :param config: Loaded configuration dictionary
     :return:
     """
-    config['n_classes'] = 2
+    config['n_classes'] = 3
 
     train_pickle_dir = os.path.join("data", "pickled", "pickled_train")
     if not os.path.exists(train_pickle_dir):
@@ -96,8 +96,9 @@ def main(config):
     train_data, dev_data = create_data_sets(train_pickle_dir,
                                             train_size=0.85)
 
-    x_train_word, x_train_chr, y_train = create_data_pairs(train_data)
-    x_dev_word, x_dev_chr, y_dev = create_data_pairs(dev_data)
+    x_train_word, x_train_chr, y_train = create_seperate_dataset(train_data)
+
+    x_dev_word, x_dev_chr, y_dev = create_seperate_dataset(dev_data)
 
     # Memory cleanup
     del train_data

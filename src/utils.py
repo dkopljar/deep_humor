@@ -18,9 +18,9 @@ def calc_metric(y_true, y_pred):
     :return:
     """
     acc = accuracy_score(y_true, y_pred)
-    prec = precision_score(y_true, y_pred, average="macro")
-    rec = recall_score(y_true, y_pred, average="macro")
-    f1 = f1_score(y_true, y_pred, average="macro")
+    prec = precision_score(y_true, y_pred, average="weighted")
+    rec = recall_score(y_true, y_pred, average="weighted")
+    f1 = f1_score(y_true, y_pred, average="weighted")
 
     return acc, prec, rec, f1
 
@@ -36,6 +36,7 @@ def read_config(config_file):
     conf_dict = dict()
 
     conf_dict['lr'] = float(config["MODEL"]['learning rate'])
+    conf_dict['dropout'] = float(config["MODEL"]['dropout keep'])
     conf_dict['optimizer'] = config["MODEL"]['optimizer']
     conf_dict['timestep'] = int(config["MODEL"]['timestep'])
     conf_dict['word_vector_dim'] = int(
@@ -47,6 +48,7 @@ def read_config(config_file):
     conf_dict['batch_size'] = int(config["MODEL"]['batch size'])
     conf_dict['domain'] = config["GENERAL"]['domain']
     conf_dict['char_timestep'] = int(config["MODEL"]['char timestep'])
+    conf_dict['early_stopping'] = int(config["MODEL"]['early stopping'])
     conf_dict['train_epochs'] = int(config["GENERAL"]['training epochs'])
 
     return conf_dict

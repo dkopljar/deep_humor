@@ -25,7 +25,7 @@ def clear_tweet(tweet):
     return tweet
 
 
-def tweet_to_integer_vector(tweet):
+def tweet_to_integer_vector(tweet,tweet_char_count=70):
     """
     Maps given tweet (it will lowercase it) to np.array of constants.TWEET_CHARACTER_COUNT dimension, 
     with zeros as padding and ending vector with defined character (41)
@@ -33,11 +33,11 @@ def tweet_to_integer_vector(tweet):
     :return: Integer vector for given tweet
     """
     tweet = clear_tweet(tweet.lower())
-    vector = np.zeros(constants.TWEET_CHARACTER_COUNT, dtype=np.int)
+    vector = np.zeros(tweet_char_count, dtype=np.int)
     last_index = 0
     for index, character in enumerate(tweet):
         last_index = index
-        if index == constants.TWEET_CHARACTER_COUNT - 1:  # leave space for ending character
+        if index == tweet_char_count - 1:  # leave space for ending character
             break
         vector[index] = char_mapper.map_letter_to_int(character)
     vector[last_index] = char_mapper.map_letter_to_int('end')

@@ -25,7 +25,7 @@ class Net:
         """
         saver = tf.train.Saver()
         saver.restore(self.sess, model_path)
-        logging.info("Model restored from " + model_path)
+        logging.info("ModelEvaluator restored from " + model_path)
 
     def train(self):
         """
@@ -73,7 +73,7 @@ class Net:
                                   os.path.join(self.model_save_dir,
                                                self.model_name + ".ckpt"),
                                   global_step=self.global_step)
-                logging.info("Model saved at: " + str(path))
+                logging.info("ModelEvaluator saved at: " + str(path))
 
             self.eval(self.valid_word, self.valid_char, self.valid_label)
             logging.info("Finished epoch {}\n".format(epoch + 1))

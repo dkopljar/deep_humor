@@ -7,14 +7,14 @@ import tensorflow as tf
 import constants
 
 
-class Model:
+class ModelEvaluator:
     def __init__(self, model_path, pred_op_name="softmax:0",
                  input_word_op_name="input_word:0",
                  input_char_op_name="input_char:0"):
         """
         :param input_op_name: Input tensor name from the TF Graph
         :param pred_op_name: Prediction operation name from the TF Graph
-        :param model_path: Model path including the model name + step. E.g.
+        :param model_path: ModelEvaluator path including the model name + step. E.g.
         'my-save-dir/my-model-10000'
         """
 
@@ -29,7 +29,7 @@ class Model:
         self.input_op_char = graph.get_tensor_by_name(input_char_op_name)
         self.input_op_word = graph.get_tensor_by_name(input_word_op_name)
 
-        print("Model restored from " + model_path)
+        print("ModelEvaluator restored from " + model_path)
 
     def predict(self, input_word, input_char, batch_size=32):
         """
@@ -75,7 +75,7 @@ class Model:
 if __name__ == "__main__":
     # Example of usage
     path = os.path.join(constants.TF_WEIGHTS, "CNN_BILSTM_FC_model.ckpt-1320")
-    model = Model(path)
+    model = ModelEvaluator(path)
 
     start = time.time()
 

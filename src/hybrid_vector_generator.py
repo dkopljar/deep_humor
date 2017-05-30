@@ -1,3 +1,8 @@
+"""
+Generates intermediary pickle files that consist of (word_vector, char_vector,
+label) triplets.
+"""
+
 from __future__ import print_function, absolute_import, division
 
 import csv

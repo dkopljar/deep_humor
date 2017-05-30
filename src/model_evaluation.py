@@ -31,22 +31,45 @@ class Model:
 
         print("Model restored from " + model_path)
 
-    def predict(self, input_word, input_char):
+    def predict(self, input_word, input_char, batch_size=32):
         """
-        Outputs the model prediction class for one example.
-        :param input: Numpy array of the ONE input example
-        :return: Prediction result index (class), varies on the model type
+        Outputs the model prediction class for all examples.
+        :param batch_size: Mini-batch size
+        :param input: Numpy array of the all input example
+        :return: Prediction result indexes (class), varies on the model type
         """
 
-        # Create a batch of a size 1
-        input_char = np.array([input_char], dtype=np.float32)
-        input_word = np.array([input_word], dtype=np.float32)
-        prediction = self.sess.run([self.pred_op],
-                                   feed_dict={self.input_op_char: input_char,
-                                              self.input_op_word: input_word})
+        size = input_word.shape[0]
+        num_batches = size // batch_size
 
-        # TODO may need some editing due to the dataset conventions
-        return np.argmax(prediction[0])
+        predictions = []
+        for b in range(num_batches):
+            input_word_b = input_word[b * batch_size:(b + 1) * batch_size]
+            input_char_b = input_char[b * batch_size:(b + 1) * batch_size]
+            prediction = self.sess.run([self.pred_op],
+                                       feed_dict={
+                                           self.input_op_char: input_char_b,
+                                           self.input_op_word: input_word_b})[0]
+
+            predictions.extend(np.argmax(prediction, axis=1))
+
+            if b % 20 == 0:
+                print("Processed batch {}/{}".format(b, num_batches))
+
+        # Last few examples didn't fit into any of the batches
+        if batch_size * num_batches < size:
+            input_word_b = input_word[batch_size * num_batches:]
+            input_char_b = input_char[batch_size * num_batches:]
+            prediction = self.sess.run([self.pred_op],
+                                       feed_dict={
+                                           self.input_op_char: input_char_b,
+                                           self.input_op_word: input_word_b})[0]
+            predictions.extend(np.argmax(prediction, axis=1))
+
+        assert len(
+            predictions) == size, "Number of predicted and input examples does not match"
+
+        return np.array(predictions)
 
 
 if __name__ == "__main__":
@@ -57,10 +80,9 @@ if __name__ == "__main__":
     start = time.time()
 
     # Simulate prediction
-    data = np.ones((100, 50))
-    data_char = np.ones((140))
-    num_examples = 1000
-    for i in range(num_examples):
-        result = model.predict(data, data_char)  # returns 0 or 1:
+    num_examples = 3000
+    data = np.ones((num_examples, 100, 50))
+    data_char = np.ones((num_examples, 140))
+    result = model.predict(data, data_char, batch_size=256)  # returns 0 or 1:
 
     print("Prediction time for all examples [s]", time.time() - start)

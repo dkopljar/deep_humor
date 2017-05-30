@@ -12,7 +12,8 @@ import sys
 
 import constants
 import dataset_parser
-
+import utils
+config = utils.read_config(constants.CONFIGS)
 
 def generate(train_dir, output_dir):
     if not os.path.exists(output_dir):
@@ -55,13 +56,13 @@ def load_input_file(filename):
     return tweets_list
 
 
-def get_word_vector(embed_dict, tweet_text, embedding_dim=100, timestep=25):
+def get_word_vector(embed_dict, tweet_text):
     return dataset_parser.createGlovefromTweet(embed_dict, tweet_text,
-                                               embedding_dim, timestep)
+                                               config["word_vector_dim"], config["timestep"])
 
 
-def get_char_vector(tweet_text, tweet_char_count=70):
-    return dataset_parser.tweet_to_integer_vector(tweet_text, tweet_char_count)
+def get_char_vector(tweet_text):
+    return dataset_parser.tweet_to_integer_vector(tweet_text, config["char_timestep"])
 
 
 def write_output_file(filename, data):

@@ -32,6 +32,7 @@ def generate(input_dir, output_dir):
         # make tweet combinations and get result
         index = 1
         for tweetID1, tweet_text1 in tweets:
+            results[tweetID1] = 0
             for tweetID2, tweet_text2 in tweets[index:]:
                 if tweetID1 == tweetID2:
                     continue

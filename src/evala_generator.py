@@ -14,11 +14,12 @@ import model_evaluation
 
 
 def generate(input_dir, output_dir):
+    print("Loading glove file...")
     glove = dataset_parser.loadGlove(constants.GLOVE_PATH)
-    print("loaded glove file")
+    print("Loaded glove file!")
 
     model = model_evaluation.ModelEvaluator(os.path.join(constants.TF_WEIGHTS,
-                                                         "CNN_BILSTM_FC_model.ckpt-1320"))
+                                                         "CNN_BILSTM_FC_model.ckpt-346"))
     input_files = os.listdir(input_dir)
     target_hashtags = [os.path.splitext(gf)[0] for gf in input_files]
     print('Target hashtags: {} ({})'.format(len(target_hashtags),
@@ -32,7 +33,8 @@ def generate(input_dir, output_dir):
         results = []
         # make tweet combinations and get result
         index = 1
-        ind = 0
+        word_data = []
+        char_data = []
         for tweetID1, tweet_text1 in tweets:
             for tweetID2, tweet_text2 in tweets[index:]:
                 if tweetID1 == tweetID2:
@@ -42,17 +44,22 @@ def generate(input_dir, output_dir):
                 word_vect2, char_vect2 = get_feature_vector(glove, tweet_text2)
                 word_merged = np.concatenate((word_vect1, word_vect2), axis=1)
                 char_merged = np.concatenate((char_vect1, char_vect2), axis=0)
+                word_data.append(word_merged)
+                char_data.append(char_merged)
 
-                network_result = get_classification(model,
-                                                    word_merged,
-                                                    char_merged)
-                results.append((tweetID1, tweetID2, network_result))
+            index += 1
+        
+        print("Predicting...")
+        predict_data = model.predict(np.array(word_data), np.array(char_data), batch_size=256)
 
-                if ind % 2000 == 0:
-                    print("{}/{}".format(ind,
-                                         len(tweets) * (len(tweets) - 1) / 2))
-                ind += 1
-
+        index = 1
+        pred_index = 0
+        for tweetID1, tweet_text1 in tweets:
+            for tweetID2, tweet_text2 in tweets[index:]:
+                if tweetID1 == tweetID2:
+                    continue
+                results.append((tweetID1, tweetID2, predict_data[pred_index]))
+                pred_index += 1
             index += 1
 
         write_output_file(output_filename, results)

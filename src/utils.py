@@ -51,7 +51,7 @@ def read_config(config_file):
     conf_dict['train_epochs'] = int(config["GENERAL"]['training epochs'])
     conf_dict['n_classes'] = int(config["MODEL"]['classes'])
     conf_dict['random_seed'] = int(config["MODEL"]['random seed'])
-    conf_dict['train_size'] = float(config["GENERAL"]['training size'])
+    conf_dict['cross_val_k'] = int(config["GENERAL"]['cross validation k'])
 
     return conf_dict
 

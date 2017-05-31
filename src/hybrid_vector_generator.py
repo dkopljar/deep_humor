@@ -12,6 +12,9 @@ import sys
 
 import constants
 import dataset_parser
+import utils
+
+config = utils.read_config(os.path.join(constants.CONFIGS, "cnn_lstm.ini"))
 
 
 def generate(train_dir, output_dir):
@@ -34,10 +37,8 @@ def generate(train_dir, output_dir):
 
         data = []
         for tweet_id, tweet_text, tweet_level in tweets:
-            word_vector = get_word_vector(glove, tweet_text,
-                                          timestep=20)
-            char_vector = get_char_vector(tweet_text,
-                                          tweet_char_count=55)
+            word_vector = get_word_vector(glove, tweet_text)
+            char_vector = get_char_vector(tweet_text)
             data.append((word_vector, char_vector, tweet_level))
 
         write_output_file(output_filename, data)
@@ -55,13 +56,15 @@ def load_input_file(filename):
     return tweets_list
 
 
-def get_word_vector(embed_dict, tweet_text, embedding_dim=100, timestep=25):
+def get_word_vector(embed_dict, tweet_text):
     return dataset_parser.createGlovefromTweet(embed_dict, tweet_text,
-                                               embedding_dim, timestep)
+                                               config["word_vector_dim"],
+                                               config["timestep"])
 
 
-def get_char_vector(tweet_text, tweet_char_count=70):
-    return dataset_parser.tweet_to_integer_vector(tweet_text, tweet_char_count)
+def get_char_vector(tweet_text):
+    return dataset_parser.tweet_to_integer_vector(tweet_text,
+                                                  config["char_timestep"])
 
 
 def write_output_file(filename, data):

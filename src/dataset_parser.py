@@ -7,7 +7,6 @@ import nltk
 import numpy as np
 
 import char_mapper
-import constants
 
 
 def clear_tweet(tweet):
@@ -25,7 +24,7 @@ def clear_tweet(tweet):
     return tweet
 
 
-def tweet_to_integer_vector(tweet,tweet_char_count=70):
+def tweet_to_integer_vector(tweet, tweet_char_count=70):
     """
     Maps given tweet (it will lowercase it) to np.array of constants.TWEET_CHARACTER_COUNT dimension, 
     with zeros as padding and ending vector with defined character (41)
@@ -150,6 +149,9 @@ def createGlovefromTweet(embed_dict, tweetText, embedding_dim=100,
     for j, token in enumerate(tokens[:timestep]):
         if token in embed_dict:
             sentenceRow[:, j] = embed_dict[token.lower()]
+        else:
+            tmp = np.ones(embedding_dim) / 20
+            sentenceRow[:, j] = tmp
     return sentenceRow
 
 
@@ -254,10 +256,3 @@ def parse_data(glove_file,
 
     with open(pickleDir, "wb") as f:
         pickle.dump(topicsMatrix, f)
-
-        # glove = loadGlove("./resources/glove/glove.twitter.27B.100d.txt")
-        # createGlovefromTweet(glove, "Gugi is smart boy")
-
-        # if __name__ == "__main__":
-        #   prepare_dataset_for_taskB("./resources/glove/glove.twitter.27B.100d.txt",
-        #             "../dataset/", "./trainDamir.pkl", "./trainDamir2.pkl")

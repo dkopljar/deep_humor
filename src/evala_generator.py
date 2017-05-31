@@ -11,6 +11,10 @@ import numpy as np
 import constants
 import dataset_parser
 import model_evaluation
+import utils
+
+config = utils.read_config(os.path.join(constants.CONFIGS, "cnn_lstm.ini"))
+
 
 
 def generate(input_dir, output_dir):
@@ -19,7 +23,7 @@ def generate(input_dir, output_dir):
     print("Loaded glove file!")
 
     model = model_evaluation.ModelEvaluator(os.path.join(constants.TF_WEIGHTS,
-                                                         "CNN_BILSTM_FC_model.ckpt-346"))
+                                                         "CNN_BILSTM_FC_model_v_loss_0.594036339069.ckpt-660"))
     input_files = os.listdir(input_dir)
     target_hashtags = [os.path.splitext(gf)[0] for gf in input_files]
     print('Target hashtags: {} ({})'.format(len(target_hashtags),
@@ -48,9 +52,10 @@ def generate(input_dir, output_dir):
                 char_data.append(char_merged)
 
             index += 1
-        
+
         print("Predicting...")
-        predict_data = model.predict(np.array(word_data), np.array(char_data), batch_size=256)
+        predict_data = model.predict(np.array(word_data), np.array(char_data),
+                                     batch_size=256)
 
         index = 1
         pred_index = 0
@@ -66,8 +71,11 @@ def generate(input_dir, output_dir):
 
 
 def get_feature_vector(embed_dict, tweet_text):
-    return (dataset_parser.createGlovefromTweet(embed_dict, tweet_text),
-            dataset_parser.tweet_to_integer_vector(tweet_text))
+    return (dataset_parser.createGlovefromTweet(embed_dict, tweet_text,
+                                                timestep=config['timestep']),
+            dataset_parser.tweet_to_integer_vector(tweet_text,
+                                                   tweet_char_count=config[
+                                                       'char_timestep']))
 
 
 def get_classification(model, word_merged, char_merged):

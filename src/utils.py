@@ -43,13 +43,15 @@ def read_config(config_file):
         config["MODEL"]['word embedding dimension'])
     conf_dict['char_embeddings_dim'] = int(
         config["MODEL"]['character embeddings dimension'])
-    conf_dict['max_word_size'] = int(config["MODEL"]['max word length'])
     conf_dict['lstm_hidden'] = int(config["MODEL"]['lstm hidden state dim'])
     conf_dict['batch_size'] = int(config["MODEL"]['batch size'])
     conf_dict['domain'] = config["GENERAL"]['domain']
     conf_dict['char_timestep'] = int(config["MODEL"]['char timestep'])
     conf_dict['early_stopping'] = int(config["MODEL"]['early stopping'])
     conf_dict['train_epochs'] = int(config["GENERAL"]['training epochs'])
+    conf_dict['n_classes'] = int(config["MODEL"]['classes'])
+    conf_dict['random_seed'] = int(config["MODEL"]['random seed'])
+    conf_dict['cross_val_k'] = int(config["GENERAL"]['cross validation k'])
 
     return conf_dict
 

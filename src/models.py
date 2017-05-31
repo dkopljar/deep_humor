@@ -244,7 +244,7 @@ class BILSTM_FC(Net):
 
         # BI-BILSTM
         # Define weights for the Bi-directional BILSTM
-        self.output_dim = 32
+        self.output_dim = 128
         weights = {
             # Hidden layer weights => 2*n_hidden because of forward +
             # backward cells
@@ -284,7 +284,7 @@ class BILSTM_FC(Net):
         net = tf.layers.dense(inputs=net,
                               kernel_initializer=tf.contrib.layers.xavier_initializer(),
                               activation=tf.nn.relu,
-                              units=32)
+                              units=512)
         net = tf.layers.dropout(net, rate=self.dropout)
 
         # Logits and softmax

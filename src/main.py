@@ -1,3 +1,4 @@
+import argparse
 import datetime
 import logging
 import os
@@ -60,7 +61,7 @@ def create_data_sets(pickle_dir, train_size=0.7):
     return train_data, dev_data
 
 
-def create_seperate_dataset(data, num_classes=3):
+def create_seperate_dataset(data, num_classes):
     """
     Creates dataset in a form: sentence_repr -> one_hot_humor_label
     Shuffles the data before returning.
@@ -86,7 +87,6 @@ def main(config):
     :param config: Loaded configuration dictionary
     :return:
     """
-    config['n_classes'] = 2
 
     train_pickle_dir = os.path.join("data", "pickled", "pickled_train")
     if not os.path.exists(train_pickle_dir):
@@ -94,19 +94,18 @@ def main(config):
         return
 
     train_data, dev_data = create_data_sets(train_pickle_dir,
-                                            train_size=0.85)
+                                            train_size=config['train_size'])
 
     x_train_word, x_train_chr, y_train = create_data_pairs(train_data)
-
     x_dev_word, x_dev_chr, y_dev = create_data_pairs(dev_data)
 
     # Memory cleanup
     del train_data
     del dev_data
 
-    assert x_train_word.shape[2] == config['timestep']
+    assert x_train_word.shape[2] == config['timestep'] * 2
     assert y_train.shape[1] == config['n_classes']
-    assert x_train_chr.shape[1] == config['char_timestep']
+    assert x_train_chr.shape[1] == config['char_timestep'] * 2
     assert x_train_chr.shape[0] == y_train.shape[0] == x_train_word.shape[0]
 
     # Mock data
@@ -129,14 +128,31 @@ def main(config):
     # +1 for unknown words
     config['char_vocab_size'] = len(char_mapper.letter_to_int_dict) + 1
 
+    # Train all three
     net = models.CNN_BILST_FC(config)
     net.train()
 
 
+def parse_arguments():
+    """
+    Parses commmand line arguments
+    :return: Parseed objects
+    """
+    # Argument parsing
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-c', '--config', type=str, required=True,
+                        help='Configuration file path. They are defined in the '
+                             'src/configs folder')
+    return parser.parse_args()
+
+
 if __name__ == "__main__":
-    seed = 1337
+    args = parse_arguments()
+
+    config = utils.read_config(args.config)
+
+    seed = config['random_seed']
     np.random.seed(seed)
-    config = utils.read_config(os.path.join(constants.CONFIGS, "cnn_lstm.ini"))
 
     # Setup logging
     utils.dir_creator([constants.LOGS, constants.TF_WEIGHTS])

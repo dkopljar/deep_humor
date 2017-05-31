@@ -256,10 +256,3 @@ def parse_data(glove_file,
 
     with open(pickleDir, "wb") as f:
         pickle.dump(topicsMatrix, f)
-
-        # glove = loadGlove("./resources/glove/glove.twitter.27B.100d.txt")
-        # createGlovefromTweet(glove, "Gugi is smart boy")
-
-        # if __name__ == "__main__":
-        #   prepare_dataset_for_taskB("./resources/glove/glove.twitter.27B.100d.txt",
-        #             "../dataset/", "./trainDamir.pkl", "./trainDamir2.pkl")

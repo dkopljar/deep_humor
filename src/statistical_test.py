@@ -1,14 +1,26 @@
+import os
+
+import constants
+import utils
+
+
 class StatisticalTest:
     def __init__(self, results_file):
         """
         :param results_file: File with results
         """
-        # TODO process results
-        pass
-        self.accuracies = []
-        self.precisions = []
-        self.recalls = []
-        self.f1s = []
+        acc, p, r, f1 = utils.read_log_file(results_file)
+
+        self.file_name = results_file
+        self.accuracies = acc
+        self.precisions = p
+        self.recalls = r
+        self.f1s = f1
+
+        assert len(self.accuracies) == 35
+        assert len(self.precisions) == 35
+        assert len(self.recalls) == 35
+        assert len(self.f1s) == 35
 
     def get_mean(self, confidence):
         """
@@ -26,3 +38,11 @@ class StatisticalTest:
         the hypothesis is accepted, False otherwise
         """
         pass
+
+
+if __name__ == "__main__":
+    files = os.listdir(constants.LOGS)
+
+    for file in files:
+        test = StatisticalTest(os.path.join(constants.LOGS, file))
+        print(test.file_name)

@@ -159,3 +159,33 @@ def split_data(input, labels, test_size=0.4):
 
     return train_word, valid_word, test_word, \
            train_label, valid_label, test_label
+
+
+def extract_data(line):
+    """
+    Extracts a floating value from the statistical result
+    :param line:
+    :return:
+    """
+    data = line.rstrip().split(" ")[-1]
+    return float(data[:-1]) / 100  # remove percentange
+
+
+def read_log_file(file):
+    """
+    Extracts final evaluation metrics from the log files
+    :param file: Log file
+    :return: Accuracy, precision, recall and f1 arrays
+    """
+    acc, prec, rec, f1s = [], [], [], []
+    with open(file, "r") as f:
+        lines = f.readlines()
+    for i, line in enumerate(lines):
+        if "Finished epoch" in line:
+            data = lines[i - 6:i - 2]
+            acc.append(extract_data(data[0]))
+            prec.append(extract_data(data[1]))
+            rec.append(extract_data(data[2]))
+            f1s.append(extract_data(data[3]))
+
+    return np.array(acc), np.array(prec), np.array(rec), np.array(f1s)

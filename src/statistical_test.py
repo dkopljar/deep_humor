@@ -1,5 +1,8 @@
 import os
 
+import numpy as np
+import scipy.stats as st
+
 import constants
 import utils
 
@@ -22,15 +25,19 @@ class StatisticalTest:
         assert len(self.recalls) == 35
         assert len(self.f1s) == 35
 
-    def get_mean(self, confidence):
+    def get_mean(self, data, confidence=0.95):
         """
         Returns the mean +- SE for the given confidence.
         :return: Tuple of values for acc, prec, rec and f1
         """
-        pass
+
+        interval = st.t.interval(confidence, len(data) - 1, loc=np.mean(data),
+                                 scale=st.sem(data))
+        mean = np.mean(interval)
+        return str("{:.3f} +- {:.5f}".format(mean, interval[1] - mean))
 
     def p_test(self, test2, p_value=0.05):
-        """
+        """str(mean)
         Does a statistical p test for the given StatisticalTest object.
         Compares all metrics.
         :param test2: StatisticalTest object to compare with
@@ -46,3 +53,6 @@ if __name__ == "__main__":
     for file in files:
         test = StatisticalTest(os.path.join(constants.LOGS, file))
         print(test.file_name)
+        print("Accuracy", test.get_mean(test.f1s))
+        print("F1", test.get_mean(test.accuracies))
+        print()

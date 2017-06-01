@@ -181,7 +181,7 @@ def read_log_file(file):
     with open(file, "r") as f:
         lines = f.readlines()
     for i, line in enumerate(lines):
-        if "Finished epoch" in line:
+        if "Finished epoch 1" in line:
             data = lines[i - 6:i - 2]
             acc.append(extract_data(data[0]))
             prec.append(extract_data(data[1]))

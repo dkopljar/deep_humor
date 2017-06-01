@@ -53,6 +53,8 @@ if __name__ == "__main__":
     for file in files:
         test = StatisticalTest(os.path.join(constants.LOGS, file))
         print(test.file_name)
-        print("Accuracy", test.get_mean(test.f1s))
-        print("F1", test.get_mean(test.accuracies))
+        print("Accuracy", test.get_mean(test.accuracies))
+        print("Precision", test.get_mean(test.precisions))
+        print("Recall", test.get_mean(test.recalls))
+        print("F1", test.get_mean(test.f1s))
         print()

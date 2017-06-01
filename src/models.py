@@ -434,11 +434,6 @@ class CNN_BILST_FC(Net):
                             weights_initializer=tf.contrib.layers.xavier_initializer()):
 
             net = slim.repeat(net, 1, slim.conv2d, 128,
-                              [5, self.char_embedding_dim], scope='conv1' )
-            net = slim.max_pool2d(net, [2, 1],
-                                  stride=[2, 1], scope='pool1')
-
-            net = slim.repeat(net, 1, slim.conv2d, 128,
                               [3, self.char_embedding_dim], scope='conv2',
                               padding="VALID")
             net = slim.max_pool2d(net, [16, 1],

@@ -100,6 +100,8 @@ class Net:
             current_val_loss = self.eval(self.valid_word,
                                          self.valid_char,
                                          self.valid_label)
+            logging.info("Finished epoch {}\n".format(epoch + 1))
+
             if current_val_loss < best_val_loss:
                 # If the validation loss is better
                 best_val_loss = current_val_loss
@@ -114,7 +116,6 @@ class Net:
             else:
                 early_stop_counter += 1
 
-            logging.info("Finished epoch {}\n".format(epoch + 1))
 
             if early_stop_counter >= self.early_stop_threshold:
                 logging.info("Early stopping the model")

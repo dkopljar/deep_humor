@@ -31,8 +31,8 @@ class StatisticalTest:
         :return: Tuple of values for acc, prec, rec and f1
         """
 
-        interval = st.t.interval(confidence, len(data) - 1, loc=np.mean(data),
-                                 scale=st.sem(data))
+        interval = st.norm.interval(confidence, loc=np.mean(data),
+                                    scale=st.sem(data))
         mean = np.mean(interval)
         return str("{:.3f} +- {:.5f}".format(mean, interval[1] - mean))
 

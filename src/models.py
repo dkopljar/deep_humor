@@ -85,6 +85,7 @@ class Net:
                        b * self.batch_size:(b + 1) * self.batch_size]
                 label = self.train_label[
                         b * self.batch_size:(b + 1) * self.batch_size]
+
                 loss, _, lr = self.sess.run(
                     [self.loss, self.train_op, self.lr],
                     {self.word_embedding_input: word,
@@ -444,29 +445,32 @@ class CNN_BILST_FC(Net):
         with slim.arg_scope([slim.conv2d, slim.fully_connected],
                             activation_fn=tf.nn.relu,
                             weights_initializer=tf.contrib.layers.xavier_initializer()):
-            N_FILTERS = 32
+            N_FILTERS = self.timestep * 1  # Must be a timestep multiplier
             FILTER_SHAPE1 = [3, self.char_embedding_dim]
             POOLING_WINDOW = 4
             POOLING_STRIDE = 2
 
-            # TODO Fix this layer
             conv1 = tf.contrib.layers.convolution2d(
                 net, N_FILTERS, FILTER_SHAPE1, padding='VALID')
             # Add a ReLU for non linearity.
             conv1 = tf.nn.relu(conv1)
             # Max pooling across output of Convolution+Relu.
-            pool1 = tf.nn.max_pool(
+            net = tf.nn.max_pool(
                 conv1,
                 ksize=[1, POOLING_WINDOW, 1, 1],
                 strides=[1, POOLING_STRIDE, 1, 1],
                 padding='SAME')
 
-        # TODO FIx
-        #remaining_dim = np.prod(pool1.shape) / self.timestep
-
-        cnn_feature = tf.reshape(net, [-1, self.timestep, remaining_dim],
+        flatten_shape = int(np.prod([int(x) for x in net.shape[1:]]) / self.timestep)
+        cnn_feature = tf.reshape(net, [-1, flatten_shape, self.timestep],
                                  name="reshape1")
-        net = tf.concat([self.word_embedding_input, cnn_feature], axis=1)
+
+        # Concat char and word features
+        net = tf.concat([self.word_embedding_input, cnn_feature], axis=1, name="concat1")
+
+        net = [tf.reshape(x, [-1, self.word_embd_vec + flatten_shape]) for x in
+               tf.split(net, self.timestep,
+                        axis=2)]
 
         weights_output_dim = 128
         weights = {
@@ -484,9 +488,6 @@ class CNN_BILST_FC(Net):
             'out': tf.Variable(tf.zeros([weights_output_dim]))
         }
 
-        net = tf.split(net, self.timestep, axis=0, name="split1")
-        print(net)
-
         # Forward and backward direction cell
         lstm_fw_cell = rnn.BasicLSTMCell(self.lstm_hidden, forget_bias=1.0)
         lstm_bw_cell = rnn.BasicLSTMCell(self.lstm_hidden, forget_bias=1.0)
@@ -497,11 +498,9 @@ class CNN_BILST_FC(Net):
                                                  dtype=tf.float32)
 
         # Linear activation, using rnn inner loop on the final output
-        net_rnn = slim.flatten(slim.dropout(
+        net = slim.flatten(slim.dropout(
             tf.matmul(net[-1], weights['out']) + biases['out'],
             keep_prob=self.dropout))
-
-        # Merge CNN and RNN features
 
         # FC layers
         net = slim.fully_connected(net, 512, scope='fc3')

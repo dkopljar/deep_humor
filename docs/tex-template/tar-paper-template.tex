@@ -116,8 +116,6 @@ C & A very long text, longer that the width of a single column & $-32$\\
 \end{center}
 \end{table*}
 
-\section{Experiments}
-
 Math expressions and formulas that appear within the sentence should be written inside the so-called \emph{inline} math environment: $2+3$, $\sqrt{16}$, $h(x)=\mathbf{1}(\theta_1 x_1 + \theta_0>0)$. Larger expressions and formulas (e.g., equations) should be written in the so-called \emph{displayed} math environment:
 
 \[
@@ -152,7 +150,13 @@ If you need a math symbol, but you don't know the corresponding \LaTeX{} command
 
 \section{Conclusion}
 
-Conclusion is the last enumerated section of the paper. It should not exceed half of a column and is typically split into 2--3 paragraphs. No new information should be presented in the conclusion; this section only summarizes and concludes the paper.
+We proposed three different models for solving comparative humor ranking task: pairwise comparison task and direct ranking classification task. All three models use deep learning architecture combining approaches of recurrent and convolutional neural networks.
+
+For pairwise comparison task best results were achieved using MODELMODELNAME and were XX\% on development set and YY\% on unseen evaluation data, and for direct ranking classification task best results were achieved using MODELMODELNAME and were XX\% on development set and YY\% on unseen evaluation data. Model evaluation on final unseen data is done using official evaluation scripts given in SemEval-2017 Task 6.
+
+We have compared our results with the results of other task participants resulting in our model ranking  X. out of Y on the Task A, and Z out of K on the Task B.  The main distinction between our model and competitive models is in the lack of hand engineered features which indicates that automatic feature extraction using deep learning framework has a great prospect in this task and requires further work.
+
+For the next step we would experiment with specially adapted word embeddings trained only on the humor containing corpus. We believe it is crucial for word vectors to learn semantic meaning from the domain specific data because of the complex humor structure.
 
 \section*{Acknowledgements}
 

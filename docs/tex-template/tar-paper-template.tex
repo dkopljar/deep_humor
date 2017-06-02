@@ -69,12 +69,13 @@ and $V$ is the number of unique characters in the dataset.
   \centering
     \includegraphics[width=0.4\textwidth]{imgs/cnn_embed.png}
 \end{figure}
+One dimensional convolution is applied after the dropout which yields character feature vectors. Generated vectors are concatenated with the word embedding vectors. Word embeddings are pretrained vectors that model the inter word relatedness. We used twitter Glove embeddings with vector size of 100.
 
 
 
+\section{Dataset}
 
-
-\section{Data}
+\section{Experiments}
 
 \subsection{Figures}
 

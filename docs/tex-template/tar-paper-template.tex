@@ -32,21 +32,46 @@ In this paper, we consider the task of comparative humor ranking in two manner: 
 
 \section{Introduction}
 
-Understanding humor expressed in the text is a challenging natural language problem which has not yet been addressed extensively in the current AI research. Humor is often subjective and relies on vast knowledge base, which is sometimes hard to reason, even for humans. It is also important to say that what is humorous today might not be humorous tomorrow due to the fact that humor can be trend dependent.
-
-
+Understanding humor expressed in the text is a challenging natural language problem which has not yet been addressed extensively in the current AI research. Humor is often subjective and relies on the vast knowledge base, which is sometimes hard to reason, even for humans. It is also important to say that what is humorous today might not be humorous tomorrow due to the fact that humor can be trend dependent.
+In this paper, we describe a system for humor detection and ranking. Our system is designed to solve two tasks. For the first task, the system is given two tweets and it should predict which tweet is more humorous. For the second task, the system is given a set of tweets and it should rank them in three categories (2 for the most humorous tweet, 1 for top ten humorous tweets and 0 otherwise). 
+To learn and test our model we used a novel dataset that was given in SemEval-2017 Task 6 \citep{potash2016hashtagwars}. Dataset consists of tweets that viewers sent as part of the Comedy Central show @midnight. For every episode topic for that show was defined and viewers were asked to send a humorous tweet about given topic. 
 
 \section{Related Work}
 
-In scientific papers, this section usually (but not necessarily) briefly describes the related research. 
 
-\section{Our model architecture}
-
-The paper should have a minimum of 3 and a maximum of 5 pages, plus an additional page for references.
+\section{Arhitecture}
+In this section, we describe arhitecture of our system. Our most complex arhitecture that we tested in this paper consists of bi-directional LSTM, CNN and fully connected neural network.
 
 \subsection{Recurrent Neural Networks}
+The main idea behind RNNs lies in retaining information from "history".
+In the context of NLP, history refers to observing the context of the
+sentence up to the currently processed word. Despite the promising results in short
+sentences, RNN losses its performance dramatically with the increasing sentence
+length due to the gradient vanishing\cite{bengio1994learning}
+and exploding problems \cite{pascanu2013difficulty}.
+
+LSTMs were designed with the purpose of correcting the RNNs shortcomings. Although LSTM can successfully capture the past context, it is sometimes good
+to have an insight at the future sentence context. Bi-LSTMs model
+this by adding an extra LSTM layer which has a reversed information flow
+meaning that the information is propagated from the end of the sentence towards
+the beginning. Output of a Bi-LSTM is a concatenated vector of the two opposite
+LSTM layers.
 
 \subsection{Convolutional Neural Networks}
+CNN networks are famous for their appliance in the Computer Vision domain but have also demonstrated an ability to extract morphological information from word char- acters, encoding them into neural representations. We first create a hash map of all characters that appear in the dataset where values are arbitrarily assigned integer values. All sentence characters are then represented using their
+mapped integer values but the padding is also applied on the word level as shown in Figure \ref{fig:cnn_embed}.
+Encoded sentence represents an input which is fed into a trainable character embedding
+layer of $C_e \times V$ dimensions, where $C_e$ is the character embedding size,
+and $V$ is the number of unique characters in the dataset.
+\begin{figure}
+  \caption{CNN arhitecture}
+  \label{fig:cnn_embed}
+  \centering
+    \includegraphics[width=0.4\textwidth]{imgs/cnn_embed.png}
+\end{figure}
+
+
+
 
 
 \section{Data}

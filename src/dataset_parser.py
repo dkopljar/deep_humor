@@ -86,6 +86,20 @@ def loadGlove(glove_file):
     return embed_dict
 
 
+def load_fastText_dict(fast_text):
+    embed_dict = {}
+    logging.info("Loading glove file...")
+
+    with open(fast_text, "r") as f:
+        for line in f:
+            split = line.split()
+            token = split[0]
+            vec = np.array([np.float(x) for x in split[1:]])
+            embed_dict[token] = vec
+
+    return embed_dict
+
+
 def read_file_by_line_and_tokenize(file_path):
     """
     Reads the twee document file and tokenizes it.
@@ -161,8 +175,8 @@ def prepare_dataset_for_taskB(glove_file,
         pickle.dump(labelMatrix, f)
 
 
-def createGlovefromTweet(embed_dict, tweetText, embedding_dim=100,
-                         timestep=25):
+def createGlovefromTweet(embed_dict, tweetText, fast_text_dict, embedding_dim=100,
+                         timestep=25, ):
     """
     Method takes tweet and converts it in Glove embedding
 
@@ -178,9 +192,11 @@ def createGlovefromTweet(embed_dict, tweetText, embedding_dim=100,
     for j, token in enumerate(tokens[:timestep]):
         if token in embed_dict:
             sentenceRow[:, j] = embed_dict[token.lower()]
+        elif token.lower() in fast_text_dict:
+            sentenceRow[:, j] = fast_text_dict[token.lower()]
         else:
-            tmp = np.ones(embedding_dim) / 20
-            sentenceRow[:, j] = tmp
+            sentenceRow[:, j] = np.zeros(embedding_dim)
+
     return sentenceRow
 
 
@@ -200,6 +216,7 @@ def create_pair_combs(lst):
             if int(element1[-1]) == int(element2[-1]):
                 continue
             if int(element1[-1]) < int(element2[-1]):
+                # Second pair is funnier
                 if np.random.random() > 0.5:
                     concatMatrix = np.concatenate((element1[0], element2[0]),
                                                   axis=1)
@@ -213,6 +230,7 @@ def create_pair_combs(lst):
                                                 axis=0)
                     pairs_labels.append(1)
             else:
+                # First pair is funnier
                 if np.random.random() > 0.5:
                     concatMatrix = np.concatenate((element2[0], element1[0]),
                                                   axis=1)

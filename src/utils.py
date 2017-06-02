@@ -2,12 +2,14 @@ import configparser
 import os
 import zipfile
 
+import nltk
 import numpy as np
 import wget
 from sklearn.metrics import accuracy_score, f1_score, recall_score, \
     precision_score
 
 import constants
+import hybrid_vector_generator
 
 
 def calc_metric(y_true, y_pred):
@@ -189,3 +191,38 @@ def read_log_file(file):
             f1s.append(extract_data(data[3]))
 
     return np.array(acc), np.array(prec), np.array(rec), np.array(f1s)
+
+
+def export_twitter_for_fastText(train_dir, export_file):
+    """
+    Writes twitter files to a txt file
+    :param train_dir:
+    :param export_file:
+    :return:
+    """
+    with open(export_file, "w") as f:
+        for hashtag in os.listdir(train_dir):
+            input_filename = os.path.join(train_dir, hashtag)
+            tweets = hybrid_vector_generator.load_input_file(
+                input_filename)  # (tweet_id, tweet_text,
+            # tweet_level)
+
+            filter = {"``", "`", "..", ',', ".", "!", "?", ";", "&", "(", ")", "'", "''",
+                      "#", ' \ '":", "...", "-", "+"}
+
+            for tweet_id, tweet_text, tweet_level in tweets:
+                tweet = tweet_text.lower()
+                for word in tweet.split():
+                    if word.startswith('@') or word.startswith(
+                            '.@') or word.startswith('http'):
+                        tweet = tweet.replace(' ' + word, "")  # if it is on the end
+                        tweet = tweet.replace(word + ' ', "")  # if it is on the begining
+
+                tweet = " ".join([x for x in nltk.word_tokenize(tweet) if x not in filter])
+                f.write(tweet + "\n")
+
+
+if __name__ == "__main__":
+    train_dir = "/home/bartol/Documents/Work/apt_project/dataset/train_data"
+    export = "fasttext.txt"
+    export_twitter_for_fastText(train_dir=train_dir, export_file=export)

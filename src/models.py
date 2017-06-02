@@ -246,7 +246,7 @@ class BILSTM_FC(Net):
 
         # BI-BILSTM
         # Define weights for the Bi-directional BILSTM
-        self.output_dim = 128
+        self.output_dim = 64
         weights = {
             # Hidden layer weights => 2*n_hidden because of forward +
             # backward cells
@@ -286,7 +286,8 @@ class BILSTM_FC(Net):
         net = tf.layers.dense(inputs=net,
                               kernel_initializer=tf.contrib.layers.xavier_initializer(),
                               activation=tf.nn.relu,
-                              units=512)
+                              units=64)
+
         net = tf.layers.dropout(net, rate=self.dropout)
 
         # Logits and softmax
@@ -358,7 +359,7 @@ class CNN_FC(Net):
         with slim.arg_scope([slim.conv2d, slim.fully_connected],
                             activation_fn=tf.nn.relu,
                             weights_initializer=tf.contrib.layers.xavier_initializer()):
-            N_FILTERS = 128
+            N_FILTERS = self.timestep * 1
             FILTER_SHAPE1 = [3, self.char_embedding_dim]
             POOLING_WINDOW = 4
             POOLING_STRIDE = 2
@@ -376,7 +377,7 @@ class CNN_FC(Net):
 
             # FC layers
             net = slim.flatten(net, scope="flatten3")
-            net = slim.fully_connected(net, 256, scope='fc3')
+            net = slim.fully_connected(net, 64, scope='fc3')
             net = slim.dropout(net, keep_prob=self.dropout, scope="dropout4")
             logits = slim.fully_connected(net, self.n_classes,
                                           activation_fn=None,
@@ -461,6 +462,8 @@ class CNN_BILST_FC(Net):
                 strides=[1, POOLING_STRIDE, 1, 1],
                 padding='SAME')
 
+        net = slim.dropout(net, keep_prob=self.dropout, scope="dropout2")
+
         flatten_shape = int(np.prod([int(x) for x in net.shape[1:]]) / self.timestep)
         cnn_feature = tf.reshape(net, [-1, flatten_shape, self.timestep],
                                  name="reshape1")
@@ -472,7 +475,7 @@ class CNN_BILST_FC(Net):
                tf.split(net, self.timestep,
                         axis=2)]
 
-        weights_output_dim = 128
+        weights_output_dim = 64
         weights = {
             # Hidden layer weights => 2*n_hidden because of forward +
             # backward cells
@@ -498,13 +501,13 @@ class CNN_BILST_FC(Net):
                                                  dtype=tf.float32)
 
         # Linear activation, using rnn inner loop on the final output
-        net = slim.flatten(slim.dropout(
-            tf.matmul(net[-1], weights['out']) + biases['out'],
+        net = slim.flatten(slim.dropout(tf.nn.relu(
+            tf.matmul(net[-1], weights['out']) + biases['out']),
             keep_prob=self.dropout))
 
         # FC layers
-        net = slim.fully_connected(net, 512, scope='fc3')
-        net = slim.dropout(net, keep_prob=self.dropout, scope="dropout4")
+        net = slim.fully_connected(net, 64, scope='fc3', activation_fn=tf.nn.relu)
+        net = slim.dropout(net, keep_prob=self.dropout, scope="dropout3")
 
         logits = slim.fully_connected(net, self.n_classes,
                                       activation_fn=None,

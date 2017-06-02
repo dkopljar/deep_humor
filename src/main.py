@@ -110,7 +110,7 @@ def main(config, final_eval=False):
         config['char_vocab_size'] = len(char_mapper.letter_to_int_dict) + 1
 
         # Train all three
-        net = models.CNN_BILST_FC(config)
+        net = models.BILSTM_FC(config)
         net.train()
     else:
         # Create K-fold object generator
@@ -168,7 +168,7 @@ def main(config, final_eval=False):
             config['char_vocab_size'] = len(char_mapper.letter_to_int_dict) + 1
 
             # Train all three
-            net = models.CNN_BILST_FC(config)
+            net = models.BILSTM_FC(config)
             net.train()
 
             # Recreate graph

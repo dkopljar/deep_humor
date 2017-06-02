@@ -15,7 +15,7 @@ class Net:
         self.optimizer = config["optimizer"]
         self.timestep = config["timestep"] * 2
         self.word_embd_vec = config["word_vector_dim"]
-        self.char_timestep = config['char_timestep'] * 2
+        self.char_max_word = config['char_max_word']
         self.char_embedding_dim = config['char_embeddings_dim']
         self.lstm_hidden = config["lstm_hidden"]
         self.char_vocab_size = config['char_vocab_size']
@@ -115,7 +115,6 @@ class Net:
                 logging.info("Model saved at: " + str(path))
             else:
                 early_stop_counter += 1
-
 
             if early_stop_counter >= self.early_stop_threshold:
                 logging.info("Early stopping the model")
@@ -235,7 +234,8 @@ class BILSTM_FC(Net):
                                                    name="input")
 
         self.chr_embedding_input = tf.placeholder(tf.int32,
-                                                  (None, self.char_timestep),
+                                                  (None,
+                                                   self.char_max_word * self.timestep),
                                                   name="input_char")
         self.tag_embedding = tf.placeholder(tf.float32,
                                             (None, self.word_embd_vec),
@@ -336,7 +336,8 @@ class CNN_FC(Net):
                                                    name="input_word")
 
         self.chr_embedding_input = tf.placeholder(tf.int32,
-                                                  (None, self.char_timestep),
+                                                  (None,
+                                                   self.char_max_word * self.timestep),
                                                   name="input_char")
         self.labels = tf.placeholder(tf.int32, (None, self.n_classes))
 
@@ -356,12 +357,21 @@ class CNN_FC(Net):
         with slim.arg_scope([slim.conv2d, slim.fully_connected],
                             activation_fn=tf.nn.relu,
                             weights_initializer=tf.contrib.layers.xavier_initializer()):
-            net = slim.repeat(net, 1, slim.conv2d, 128,
-                              [3, self.char_embedding_dim], scope='conv2',
-                              padding="VALID")
+            N_FILTERS = 128
+            FILTER_SHAPE1 = [3, self.char_embedding_dim]
+            POOLING_WINDOW = 4
+            POOLING_STRIDE = 2
 
-            net = slim.max_pool2d(net, [16, 1],
-                                  stride=[1, 1], scope='pool2')
+            conv1 = tf.contrib.layers.convolution2d(
+                net, N_FILTERS, FILTER_SHAPE1, padding='VALID')
+            # Add a ReLU for non linearity.
+            conv1 = tf.nn.relu(conv1)
+            # Max pooling across output of Convolution+Relu.
+            net = tf.nn.max_pool(
+                conv1,
+                ksize=[1, POOLING_WINDOW, 1, 1],
+                strides=[1, POOLING_STRIDE, 1, 1],
+                padding='SAME')
 
             # FC layers
             net = slim.flatten(net, scope="flatten3")
@@ -413,7 +423,8 @@ class CNN_BILST_FC(Net):
                                                    name="input_word")
 
         self.chr_embedding_input = tf.placeholder(tf.int32,
-                                                  (None, self.char_timestep),
+                                                  (None,
+                                                   self.char_max_word * self.timestep),
                                                   name="input_char")
         self.labels = tf.placeholder(tf.int32, (None, self.n_classes))
 
@@ -433,15 +444,29 @@ class CNN_BILST_FC(Net):
         with slim.arg_scope([slim.conv2d, slim.fully_connected],
                             activation_fn=tf.nn.relu,
                             weights_initializer=tf.contrib.layers.xavier_initializer()):
+            N_FILTERS = 32
+            FILTER_SHAPE1 = [3, self.char_embedding_dim]
+            POOLING_WINDOW = 4
+            POOLING_STRIDE = 2
 
-            net = slim.repeat(net, 1, slim.conv2d, 128,
-                              [3, self.char_embedding_dim], scope='conv2',
-                              padding="VALID")
-            net = slim.max_pool2d(net, [16, 1],
-                                  stride=[1, 1], scope='pool2')
+            # TODO Fix this layer
+            conv1 = tf.contrib.layers.convolution2d(
+                net, N_FILTERS, FILTER_SHAPE1, padding='VALID')
+            # Add a ReLU for non linearity.
+            conv1 = tf.nn.relu(conv1)
+            # Max pooling across output of Convolution+Relu.
+            pool1 = tf.nn.max_pool(
+                conv1,
+                ksize=[1, POOLING_WINDOW, 1, 1],
+                strides=[1, POOLING_STRIDE, 1, 1],
+                padding='SAME')
 
-            # FC layers
-            net_cnn = slim.flatten(net, scope="flatten3")
+        # TODO FIx
+        #remaining_dim = np.prod(pool1.shape) / self.timestep
+
+        cnn_feature = tf.reshape(net, [-1, self.timestep, remaining_dim],
+                                 name="reshape1")
+        net = tf.concat([self.word_embedding_input, cnn_feature], axis=1)
 
         weights_output_dim = 128
         weights = {
@@ -459,10 +484,8 @@ class CNN_BILST_FC(Net):
             'out': tf.Variable(tf.zeros([weights_output_dim]))
         }
 
-        net = tf.reshape(self.word_embedding_input,
-                         [-1, self.timestep * self.word_embd_vec],
-                         name="reshape1")
-        net = tf.split(net, self.timestep, axis=1, name="split1")
+        net = tf.split(net, self.timestep, axis=0, name="split1")
+        print(net)
 
         # Forward and backward direction cell
         lstm_fw_cell = rnn.BasicLSTMCell(self.lstm_hidden, forget_bias=1.0)
@@ -479,7 +502,6 @@ class CNN_BILST_FC(Net):
             keep_prob=self.dropout))
 
         # Merge CNN and RNN features
-        net = tf.concat([net_cnn, net_rnn], axis=1)
 
         # FC layers
         net = slim.fully_connected(net, 512, scope='fc3')

@@ -8,7 +8,7 @@ import utils
 
 
 class StatisticalTest:
-    def __init__(self, results_file):
+    def __init__(self, results_file, k_folds=35):
         """
         :param results_file: File with results
         """
@@ -20,10 +20,10 @@ class StatisticalTest:
         self.recalls = r
         self.f1s = f1
 
-        assert len(self.accuracies) == 35
-        assert len(self.precisions) == 35
-        assert len(self.recalls) == 35
-        assert len(self.f1s) == 35
+        assert len(self.accuracies) == k_folds
+        assert len(self.precisions) == k_folds
+        assert len(self.recalls) == k_folds
+        assert len(self.f1s) == k_folds
 
     def get_mean(self, data, confidence=0.95):
         """

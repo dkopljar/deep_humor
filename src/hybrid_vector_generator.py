@@ -14,10 +14,8 @@ import constants
 import dataset_parser
 import utils
 
-config = utils.read_config(os.path.join(constants.CONFIGS, "cnn_lstm.ini"))
 
-
-def generate(train_dir, output_dir):
+def generate(train_dir, output_dir, config):
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
@@ -37,8 +35,16 @@ def generate(train_dir, output_dir):
 
         data = []
         for tweet_id, tweet_text, tweet_level in tweets:
-            word_vector = get_word_vector(glove, tweet_text)
-            char_vector = get_char_vector(tweet_text)
+            word_vector = dataset_parser.createGlovefromTweet(glove, tweet_text,
+                                                              config["word_vector_dim"],
+                                                              config["timestep"])
+
+            char_vector = dataset_parser.tweet_to_integer_vector(tweet_text,
+                                                                 timestep=
+                                                                 config['timestep'],
+                                                                 max_word_size=
+                                                                 config["char_max_word"])
+
             data.append((word_vector, char_vector, tweet_level))
 
         write_output_file(output_filename, data)
@@ -56,30 +62,20 @@ def load_input_file(filename):
     return tweets_list
 
 
-def get_word_vector(embed_dict, tweet_text):
-    return dataset_parser.createGlovefromTweet(embed_dict, tweet_text,
-                                               config["word_vector_dim"],
-                                               config["timestep"])
-
-
-def get_char_vector(tweet_text):
-    return dataset_parser.tweet_to_integer_vector(tweet_text,
-                                                  config["char_timestep"])
-
-
 def write_output_file(filename, data):
     with open(filename, 'wb') as f:
         pickle.dump(data, f)
 
 
 if __name__ == '__main__':
-    if len(sys.argv) != 3:
-        print('Usage:', __file__, '<train_data> <output_dir>')
+    if len(sys.argv) != 4:
+        print('Usage:', __file__, '<train_data> <output_dir> <config_file>')
         print('train_data directory contains train tsv files for each theme.')
         print('output directory for storing vector pickles.')
         print('Example call:')
-        print('python3 hybrid_vector_generator.py ../dataset/train_data output')
+        print(
+            'python3 hybrid_vector_generator.py ../dataset/train_data output configs/cnn_lstm.ini')
         sys.exit(1)
 
-    _, train_dir, output_dir = sys.argv
-    generate(train_dir, output_dir)
+    _, train_dir, output_dir, config_file = sys.argv
+    generate(train_dir, output_dir, utils.read_config(config_file))

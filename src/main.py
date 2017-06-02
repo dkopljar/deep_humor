@@ -136,7 +136,7 @@ def main(config, final_eval=False):
 
             assert x_train_word.shape[2] == config['timestep'] * 2
             assert y_train.shape[1] == config['n_classes']
-            assert x_train_chr.shape[1] == config['char_timestep'] * 2
+            assert x_train_chr.shape[1] == config['char_max_word'] * config['timestep'] * 2
             assert x_train_chr.shape[0] == y_train.shape[0] == \
                    x_train_word.shape[0]
 
@@ -168,7 +168,7 @@ def main(config, final_eval=False):
             config['char_vocab_size'] = len(char_mapper.letter_to_int_dict) + 1
 
             # Train all three
-            net = models.CNN_BILST_FC(config)
+            net = models.CNN_FC(config)
             net.train()
 
             # Recreate graph

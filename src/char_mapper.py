@@ -27,20 +27,18 @@ letter_to_int_dict = {
     'w': 25,
     'q': 26,
     '-': 27,
-    ' ': 28,
-    '.': 29,
-    ',': 30,
-    '!': 31,
-    '?': 32,
-    '_': 33,
-    '$': 34,
-    '&': 35,
-    ')': 36,
-    '(': 37,
-    '+': 38,
-    '"': 39,
-    "'": 40,
-    'end': 41
+    '.': 28,
+    ',': 29,
+    '!': 30,
+    '?': 31,
+    '_': 32,
+    '$': 33,
+    '&': 34,
+    ')': 35,
+    '(': 36,
+    '+': 37,
+    '"': 38,
+    "'": 39,
 }
 
 
@@ -51,4 +49,4 @@ def map_letter_to_int(value):
     :return: Integer value for given string or character.
     """
     return letter_to_int_dict.get(value,
-                                  42)  # 42 is used for non-important characters
+                                  40)  # 42 is used for non-important characters

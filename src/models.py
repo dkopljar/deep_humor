@@ -451,6 +451,10 @@ class CNN_BILST_FC(Net):
             POOLING_WINDOW = 4
             POOLING_STRIDE = 2
 
+            logging.info(str("Number of CNN filters {}".format(N_FILTERS)))
+            logging.info(str("Pooling window {}".format(POOLING_WINDOW)))
+            logging.info(str("Pooling stride {}".format(POOLING_STRIDE)))
+
             conv1 = tf.contrib.layers.convolution2d(
                 net, N_FILTERS, FILTER_SHAPE1, padding='VALID')
             # Add a ReLU for non linearity.
@@ -476,6 +480,8 @@ class CNN_BILST_FC(Net):
                         axis=2)]
 
         weights_output_dim = 64
+        logging.info("LSTM output dimension {}".format(weights_output_dim))
+
         weights = {
             # Hidden layer weights => 2*n_hidden because of forward +
             # backward cells
@@ -507,6 +513,7 @@ class CNN_BILST_FC(Net):
 
         # FC layers
         net = slim.fully_connected(net, 64, scope='fc3', activation_fn=tf.nn.relu)
+        logging.info("FC network dimension {}".format(64))
         net = slim.dropout(net, keep_prob=self.dropout, scope="dropout3")
 
         logits = slim.fully_connected(net, self.n_classes,

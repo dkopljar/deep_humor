@@ -175,8 +175,8 @@ def prepare_dataset_for_taskB(glove_file,
         pickle.dump(labelMatrix, f)
 
 
-def createGlovefromTweet(embed_dict, tweetText, fast_text_dict, embedding_dim=100,
-                         timestep=25, ):
+def createGlovefromTweet(embed_dict, tweetText, embedding_dim=100,
+                         timestep=25):
     """
     Method takes tweet and converts it in Glove embedding
 
@@ -192,10 +192,8 @@ def createGlovefromTweet(embed_dict, tweetText, fast_text_dict, embedding_dim=10
     for j, token in enumerate(tokens[:timestep]):
         if token in embed_dict:
             sentenceRow[:, j] = embed_dict[token.lower()]
-        elif token.lower() in fast_text_dict:
-            sentenceRow[:, j] = fast_text_dict[token.lower()]
         else:
-            sentenceRow[:, j] = np.zeros(embedding_dim)
+            sentenceRow[:, j] = np.ones(embedding_dim) / 20
 
     return sentenceRow
 

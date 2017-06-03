@@ -103,7 +103,8 @@ class Net:
                                          self.valid_label)
             logging.info("Finished epoch {}\n".format(epoch + 1))
 
-            if current_val_loss < best_val_loss:
+            force_save = True
+            if force_save:
                 # If the validation loss is better
                 best_val_loss = current_val_loss
                 early_stop_counter = 0
@@ -128,6 +129,9 @@ class Net:
         :param
         :return:
         """
+        if input.size == 0:
+            return None
+
         logging.info("Evaluating on the validation set...")
         num_batches = input_chr.shape[0] // self.batch_size
         input, input_chr, labels = utils.shuffle_data(

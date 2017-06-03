@@ -39,6 +39,7 @@ letter_to_int_dict = {
     '+': 37,
     '"': 38,
     "'": 39,
+    " ": 40
 }
 
 
@@ -49,4 +50,4 @@ def map_letter_to_int(value):
     :return: Integer value for given string or character.
     """
     return letter_to_int_dict.get(value,
-                                  40)  # 42 is used for non-important characters
+                                  41)  # 42 is used for non-important characters

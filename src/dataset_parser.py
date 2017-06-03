@@ -191,7 +191,7 @@ def createGlovefromTweet(embed_dict, tweetText, embedding_dim=100,
     sentenceRow = np.zeros((embedding_dim, timestep))
     for j, token in enumerate(tokens[:timestep]):
         if token in embed_dict:
-            sentenceRow[:, j] = embed_dict[token.lower()]
+            sentenceRow[:, j] = embed_dict[token]
         else:
             sentenceRow[:, j] = np.ones(embedding_dim) / 20
 

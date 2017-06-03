@@ -450,7 +450,7 @@ class CNN_BILST_FC(Net):
         with slim.arg_scope([slim.conv2d, slim.fully_connected],
                             activation_fn=tf.nn.relu,
                             weights_initializer=tf.contrib.layers.xavier_initializer()):
-            N_FILTERS = self.timestep * 1  # Must be a timestep multiplier
+            N_FILTERS = self.timestep * 2  # Must be a timestep multiplier
             FILTER_SHAPE1 = [3, self.char_embedding_dim]
             POOLING_WINDOW = 4
             POOLING_STRIDE = 2

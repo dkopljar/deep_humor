@@ -14,6 +14,7 @@ import utils
 
 
 def generate(input_dir, output_dir, model, config):
+    print("Loading glove")
     glove = dataset_parser.loadGlove(constants.GLOVE_PATH)
     print("loaded glove file")
 
@@ -30,26 +31,30 @@ def generate(input_dir, output_dir, model, config):
         results = {}
         # make tweet combinations and get result
         index = 1
+        word_data, char_data = [], []
         for tweetID1, tweet_text1 in tweets:
             results[tweetID1] = 0
             for tweetID2, tweet_text2 in tweets[index:]:
                 if tweetID1 == tweetID2:
                     continue
 
-                word_vect1, char_vect1 = get_feature_vector(glove, tweet_text1)
-                word_vect2, char_vect2 = get_feature_vector(glove, tweet_text2)
+                word_vect1, char_vect1 = get_feature_vector(glove, tweet_text1 ,config)
+                word_vect2, char_vect2 = get_feature_vector(glove, tweet_text2, config)
                 word_merged = np.concatenate((word_vect1, word_vect2), axis=1)
                 char_merged = np.concatenate((char_vect1, char_vect2), axis=0)
 
-                network_result = get_classification(model,
-                                                    word_merged,
-                                                    char_merged)
+                word_data.append(word_merged)
+                char_data.append(word_merged)
+                index += 1
 
-                if network_result == 1:
-                    increase_counter(results, tweetID1)
-                else:
-                    increase_counter(results, tweetID2)
-            index += 1
+        network_result = get_classification(model,
+                                            word_merged,
+                                            char_merged)
+
+        if network_result == 1:
+            increase_counter(results, tweetID1)
+        else:
+            increase_counter(results, tweetID2)
 
         write_output_file(output_filename, results)
 
@@ -61,7 +66,7 @@ def increase_counter(dictionary, key):
         dictionary[key] = 1
 
 
-def get_feature_vector(embed_dict, tweet_text):
+def get_feature_vector(embed_dict, tweet_text, config):
     return (dataset_parser.createGlovefromTweet(embed_dict, tweet_text,
                                                 timestep=config['timestep']),
             dataset_parser.tweet_to_integer_vector(tweet_text,
@@ -70,6 +75,8 @@ def get_feature_vector(embed_dict, tweet_text):
 
 
 def get_classification(model, word_merged, char_merged):
+    import pdb
+    pdb.set_trace()
     return model.predict(word_merged, char_merged)
 
 
@@ -91,7 +98,7 @@ def write_output_file(filename, results):
 
 
 if __name__ == '__main__':
-    if len(sys.argv) != 3:
+    if len(sys.argv) != 5:
         print('Usage:', __file__, '<input_dir> <output_dir> <model_path> <config_path>')
         print('Input directory contains tsv files for each theme.')
         sys.exit(1)

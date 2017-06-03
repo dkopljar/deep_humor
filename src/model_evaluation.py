@@ -9,7 +9,7 @@ import constants
 
 class ModelEvaluator:
     def __init__(self, model_path, pred_op_name="softmax:0",
-                 input_word_op_name="input_word:0",
+                 input_word_op_name="input:0",
                  input_char_op_name="input_char:0"):
         """
         :param input_op_name: Input tensor name from the TF Graph
@@ -23,6 +23,7 @@ class ModelEvaluator:
         new_saver = tf.train.import_meta_graph(model_path + ".meta")
         new_saver.restore(self.sess, model_path)
         graph = tf.get_default_graph()
+
 
         # Restore ops for input and prediction
         self.pred_op = graph.get_tensor_by_name(pred_op_name)

@@ -110,7 +110,6 @@ class Net:
                                          self.valid_label)
             logging.info("Finished epoch {}\n".format(epoch + 1))
 
-            force_save = False
             if best_val_loss > current_val_loss:
                 # If the validation loss is better
                 best_val_loss = current_val_loss

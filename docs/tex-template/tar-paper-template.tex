@@ -38,7 +38,9 @@ To learn and test our model we used a novel dataset that was given in SemEval-20
 
 \section{Related Work}
 
-Related work dude.
+In the last few years there were a lot of approaches in humor detection \citep{mihalcea2005,reyes2013,zhang2014,barbieri2014,yang2015}. Some of those works \citep{reyes2013,zhang2014,barbieri2014}, have also acquired humor dataset from Twitter.
+
+Most of those related works separates the apprehension of humor into two groups: humor and non-humor, basically a binary classification. Using this representation ignores continuous nature of humor, while also not accounting for the subjectivity in perceiving humor \citep{potash2016hashtagwars}.
 
 \section{Arhitecture}
 
@@ -74,7 +76,7 @@ Glove\citep{GLove}\footnote{\texttt{https://nlp.stanford.edu/projects/glove/}}
 embeddings with vector size of 100.
 
 \section{Dataset}
-In this paper, we trained and evaluated models on the dataset that was created from tweets of viewers who watched TV show @midnight. As part of this "game-show" viewers were asked to write a humorous message about a topic that was announced in the show. The day of the ensuing episode, @midnight would create a post that announced the top-10 tweets from the previous episode. The whole dataset consists of 9,658 tweets about 86 different topics. Every tweet in the dataset is labeled in one of the three labels. Label 2 indicates winning tweet, label 1 indicates that tweet was selected as top-10 and label 0 intended for all other tweets. A number of tweets per topic vary among different topics, but 71\% of topics contain at least 90 tweets. Topics with the lowest number of tweets have 20 tweets, and topics with the highest number of tweets have 180 tweets. It is also important to note that for some topics like "FastFoodBooks" external knowledge is required to understand the humor, while for other like "IfIWerePresident" it isn't.
+In this paper, we trained and evaluated models on the dataset that was created from tweets of viewers who watched TV show @midnight. As part of this "game-show" viewers were asked to write a humorous message about a topic that was announced in the show. The day of the ensuing episode, @midnight would create a post that announced the top-10 tweets from the previous episode. The whole dataset consists of 11,685 tweets about 106 different topics. Every tweet in the dataset is labeled in one of the three labels. Label 2 indicates winning tweet, label 1 indicates that tweet was selected as top-10 and label 0 intended for all other tweets. A number of tweets per topic vary among different topics, but 71\% of topics contain at least 90 tweets. Topics with the lowest number of tweets have 20 tweets, and topics with the highest number of tweets have 180 tweets. It is also important to note that for some topics like "FastFoodBooks" external knowledge is required to understand the humor, while for other like "IfIWerePresident" it isn't.
 
 \section{Experiments}
 We divide this section into two parts: the former one reporting results on the

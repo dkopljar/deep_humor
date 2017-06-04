@@ -44,6 +44,11 @@ Related work dude.
 
 In this section, we describe architecture of our system. Our most complex architecture that we tested in this paper consists of bi-directional \emph{Long Short Term Memory}, further referred as Bi-LSTM, convolutional neural network, further referred as CNN, and fully connected neural network.
 
+The whole pipeline was  built using the open source frameworks
+Tensorflow\citep{tensorflow}\footnote{\texttt{https://www.tensorflow.org/}}
+and
+scikit-learn\citep{scikit}\footnote{\texttt{http://scikit-learn.org/stable/index.html}}.
+
 \subsection{Recurrent Neural Networks}
 
 The main idea behind RNNs lies in retaining information from "history". In the context of NLP, history refers to observing the context of the sentence up to the currently processed word. Despite the promising results in short sentences, RNN losses its performance dramatically with the increasing sentence length due to the gradient vanishing \cite{bengio1994learning} and exploding problems \cite{pascanu2013difficulty}.
@@ -61,12 +66,130 @@ CNN networks are famous for their appliance in the \emph{Computer Vision} domain
     \includegraphics[width=0.4\textwidth]{imgs/cnn_embed.png}
 \end{figure}
 
-One dimensional convolution is applied after the dropout which yields character feature vectors. Generated vectors are concatenated with the word embedding vectors. Word embeddings are pretrained vectors that model the inter word relatedness. We used twitter Glove embeddings with vector size of 100.
+One dimensional convolution is applied after the dropout which yields character
+feature vectors. Generated vectors are concatenated with the word embedding
+vectors. Word embeddings are pretrained vectors that model the inter word
+relatedness. We used Twitter
+Glove\citep{GLove}\footnote{\texttt{https://nlp.stanford.edu/projects/glove/}}
+embeddings with vector size of 100.
 
 \section{Dataset}
 In this paper, we trained and evaluated models on the dataset that was created from tweets of viewers who watched TV show @midnight. As part of this "game-show" viewers were asked to write a humorous message about a topic that was announced in the show. The day of the ensuing episode, @midnight would create a post that announced the top-10 tweets from the previous episode. The whole dataset consists of 9,658 tweets about 86 different topics. Every tweet in the dataset is labeled in one of the three labels. Label 2 indicates winning tweet, label 1 indicates that tweet was selected as top-10 and label 0 intended for all other tweets. A number of tweets per topic vary among different topics, but 71\% of topics contain at least 90 tweets. Topics with the lowest number of tweets have 20 tweets, and topics with the highest number of tweets have 180 tweets. It is also important to note that for some topics like "FastFoodBooks" external knowledge is required to understand the humor, while for other like "IfIWerePresident" it isn't.
 
 \section{Experiments}
+We divide this section into two parts: the former one reporting results on the
+non-evaluation data, and the latter results on the official evaluation data.
+
+\subsection{Non-evaluation data results}
+During the model training and evaluation we used a k-fold cross-validation technique
+($k=35$) to properly optimize our models hyper-parameters. Grid search
+method was not feasible in our case due to the large parameters
+search space and slow training time. Our method was to change each parameter
+value from the low to high extremes and see how it affects the model
+performance, in the end interpolating to find near optimal parameters. 
+In addition to using dropout for regularization, we also employed the
+early-stopping\cite{early_stopping} method to achieve the best possible validation
+performance. Table \ref{tab:hyperparams} shows the final hyper-parameters used
+in training and validation. For the optimization algorithm we used
+Adam\cite{Adam}.
+
+\begin{table}
+\small
+\caption{Final network hyper-parameters}
+ \label{tab:hyperparams}
+ \begin{center}
+ \begin{tabular}{ll}
+ \toprule
+     Hyperparameter & Value\\
+ \midrule
+     Dropout rate & 0.3\\
+     BLSTM hidden state & 128\\
+     Timestep & 30\\
+     Learning rate & 0.001\\
+     CNN filter size & 120 \\
+     FC layer size & 256\\
+     Character embedding layer size & 50\\
+ \bottomrule
+ \end{tabular}
+ \end{center}
+\end{table}
+
+Our model is trained to maximize the class probability $p(y \vert x)$ using
+cross-entropy as the loss function. Output $1$ means that the first tweet was
+funnier and $0$ otherwise.
+In our results, we report results in form of
+four metrics: accuracy, precision, recall and F1 score. All entries represent
+$95\%$ confidence intervals calculated from the $35$ validation runs.
+
+\begin{table}
+\scriptsize
+    \caption{$95\%$ confidence scores on the non-evaluation data for all models
+    (in $\%$)}
+ \label{tab:conf_95_dev}
+ \begin{center}
+ \begin{tabular}{l|llll}
+ \toprule
+     & Baseline & BLSTM & CNN & CNN + BLSTM\\
+ \midrule
+     Accuracy & 12 $\pm$ 0.0124 & 12 $\pm$ 0.0124 & 12 $\pm$ 0.0124  & 12 $\pm$ 0.0124 \\
+     Precision & 12 $\pm$ 0.0124 & & &\\
+     Recall & 12 $\pm$ 0.0124 & & &\\
+     F1 & 12 $\pm$ 0.0124 & & &\\
+ \bottomrule
+ \end{tabular}
+ \end{center}
+\end{table}
+
+In Table \ref{tab:conf_95_dev} are the results from the non-evaluation data.
+Baseline model randomly guesses the funnier tweet and is expected to have
+metrics around $50\%$.
+
+\subsection{Evaluation data results}
+In this section we demonstrate how our best model compares with other solutions on the official
+evaluation data. Note that the accuracy and distance measurements listed in
+Table \ref{tab:task_a_official} and Table \ref{tab:task_b_official} are
+defined by the task organizers\cite{semeval_paper}.
+
+\begin{table}
+  \caption{Official Task A results in comparison with our model}
+ \label{tab:task_a_official}
+ \begin{center}
+ \begin{tabular}{ll}
+ \toprule
+     Team & Accuracy\\
+ \midrule
+     Team 1 & 23 \\
+     Team 2 & 23\\
+     \textbf{Our model} & 100 \\
+     Team 3 & 100\\
+     Team 5 & 100\\
+     Team 6 & 100\\
+ \bottomrule
+ \end{tabular}
+ \end{center}
+\end{table}
+
+\begin{table}
+  \caption{Official Task B results in comparison with our model}
+ \label{tab:task_b_official}
+ \begin{center}
+ \begin{tabular}{ll}
+ \toprule
+     Team & Distance\\
+ \midrule
+     Team 1 & 23 \\
+     Team 2 & 23\\
+     \textbf{Our model} & 0.9 \\
+     Team 3 & 100\\
+     Team 5 & 100\\
+     Team 6 & 100\\
+ \bottomrule
+ \end{tabular}
+ \end{center}
+\end{table}
+
+Write something about comparison.
+
 
 % \subsection{Figures}
 

@@ -30,8 +30,7 @@ recent deep neural models in order to eschew manual feature engineering. In
 evaluation section we experimented with the bi-directional LSTMs and CNNs, in
 combination and separately. For constructing feature vectors we used
 pre-trained Twitter \emph{GloVe} word embeddings along with trained character
-embedding.
-The system was trained, tuned, and evaluated on the SemEval-2017 Task 6 dataset
+embedding. The system was trained, tuned, and evaluated on the SemEval-2017 Task 6 dataset
 for which it yields outstanding results.
 }
 
@@ -41,9 +40,7 @@ for which it yields outstanding results.
 
 \section{Introduction}
 
-Understanding humor expressed in the text is a challenging natural language problem which has not yet been addressed extensively in the current AI research. Humor is often subjective and relies on the vast knowledge base, which is sometimeshard to reason, even for humans. It is also important to say that what is
-humorous today might not be humorous tomorrow due to the fact that humor can be
-trend dependent.
+Understanding humor expressed in the text is a challenging natural language problem which has not yet been addressed extensively in the current AI research. Humor is often subjective and relies on the vast knowledge base, which is sometimes hard to reason, even for humans. It is also important to say that what is humorous today might not be humorous tomorrow due to the fact that humor can be trend dependent.
 
 In this paper, we describe a system for humor detection and
 ranking. Our system is designed to solve two tasks. For the first task, the
@@ -74,9 +71,9 @@ convolutional layer \citep{cnn}, further referred as CNN, and a fully connected
 layer with a softmax layer at the end for predicting class probabilities.
 
 The whole pipeline was built using the open source frameworks
-Tensorflow\citep{tensorflow}\footnote{\texttt{https://www.tensorflow.org/}}
+\emph{TensorFlow}\footnote{\texttt{https://www.tensorflow.org/}}
 and
-scikit-learn\citep{scikit}\footnote{\texttt{http://scikit-learn.org/stable/index.html}}.
+\emph{scikit-learn}\footnote{\texttt{http://scikit-learn.org/stable/index.html}}.
 
 \subsection{Recurrent Neural Networks}
 

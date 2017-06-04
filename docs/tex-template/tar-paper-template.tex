@@ -41,10 +41,7 @@ for which it yields outstanding results.
 
 \section{Introduction}
 
-Understanding humor expressed in the text is a challenging natural language 
-problem which has not yet been addressed extensively in the current AI research.
-Humor is often subjective and relies on the vast knowledge base, which is sometimes
-hard to reason, even for humans. It is also important to say that what is
+Understanding humor expressed in the text is a challenging natural language problem which has not yet been addressed extensively in the current AI research. Humor is often subjective and relies on the vast knowledge base, which is sometimeshard to reason, even for humans. It is also important to say that what is
 humorous today might not be humorous tomorrow due to the fact that humor can be
 trend dependent.
 
@@ -66,14 +63,14 @@ Some of those works \citep{reyes2013,zhang2014,barbieri2014} have also acquired
 humor dataset from Twitter. Most of the related works separate the apprehension 
 of humor into two groups: humor and non-humor, basically a binary classification.
 This representation ignores the continuous nature of humor, while also not accounting
-for the subjectivity in perceiving humor\citep{potash2016hashtagwars}.
+for the subjectivity in perceiving humor \citep{potash2016hashtagwars}.
 
 \section{Architecture}
 
 In this section, we describe the architecture of our system. Our most complex
 architecture consists of the bi-directional
-\emph{Long Short Term Memory}\cite{LSTM} layer, further referred as Bi-LSTM,
-convolutional layer\citep{cnn}, further referred as CNN, and a fully connected
+\emph{Long Short Term Memory} \cite{LSTM} layer, further referred as Bi-LSTM,
+convolutional layer \citep{cnn}, further referred as CNN, and a fully connected
 layer with a softmax layer at the end for predicting class probabilities.
 
 The whole pipeline was built using the open source frameworks
@@ -116,7 +113,7 @@ $C_e$ is the character embedding size, and $V$ is the number of unique character
 \subsection{Used models}
 
 \subsubsection{CNN network}
-Previous work\cite{onaj_rad_s_cnn} has demonstrated that CNN are top performers
+Previous work \cite{onaj_rad_s_cnn} has demonstrated that CNN are top performers
 when it comes to capturing humor. Our first model consists of the character
 embedding layer followed by a 1-D CNN layer for extracting features. CNN tweet
 features are joined and fed into a fully connected layer with a softmax layer
@@ -144,7 +141,7 @@ In this paper, we trained and evaluated models on the dataset that was created f
 We divide this section into two parts: the former one reporting results on the non-evaluation data, and the latter results on the official evaluation data.
 
 \subsection{Non-evaluation data results}
-During the model training and evaluation we used a k-fold cross-validation technique ($k=35$) to properly optimize our models hyper-parameters. Grid search method was not feasible in our case due to large parameters search space and slow training time. Our method was to change each parameter value from the low to high extremes and see how it affects the model performance, in the end interpolating to find near optimal parameters. In addition to using dropout for regularization, we also employed the early-stopping\cite{early_stopping} method to achieve the best possible validation performance. Table \ref{tab:hyperparams} shows the final hyper-parameters used in training and validation. For the optimization algorithm we used Adam \citep{adam2014}.
+During the model training and evaluation we used a k-fold cross-validation technique ($k=35$) to properly optimize our models hyper-parameters. Grid search method was not feasible in our case due to large parameters search space and slow training time. Our method was to change each parameter value from the low to high extremes and see how it affects the model performance, in the end interpolating to find near optimal parameters. In addition to using dropout for regularization, we also employed the early-stopping \cite{early_stopping} method to achieve the best possible validation performance. Table \ref{tab:hyperparams} shows the final hyper-parameters used in training and validation. For the optimization algorithm we used Adam \citep{adam2014}.
 
 \begin{table}
 \small
@@ -208,7 +205,7 @@ we further reference it as our best model.
 In this section we demonstrate how our best model compares with other solutions on the official
 evaluation data. Note that the accuracy and distance measurements listed in
 Table \ref{tab:task_a_official} and Table \ref{tab:task_b_official} are
-defined by the task organizers\citep{potash2016hashtagwars}.
+defined by the task organizers \citep{potash2016hashtagwars}.
 
 \begin{table}
   \caption{Official Task A results in comparison with our model}

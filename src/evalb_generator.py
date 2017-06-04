@@ -38,18 +38,17 @@ def generate(input_dir, output_dir, model, config):
                 if tweetID1 == tweetID2:
                     continue
 
-                word_vect1, char_vect1 = get_feature_vector(glove, tweet_text1 ,config)
+                word_vect1, char_vect1 = get_feature_vector(glove, tweet_text1, config)
                 word_vect2, char_vect2 = get_feature_vector(glove, tweet_text2, config)
-                word_merged = np.concatenate((word_vect1, word_vect2), axis=1)
-                char_merged = np.concatenate((char_vect1, char_vect2), axis=0)
+                word_merged = np.array([word_vect1, word_vect2])
+                char_merged = np.array([char_vect1, char_vect2])
 
                 word_data.append(word_merged)
-                char_data.append(word_merged)
+                char_data.append(char_merged)
                 index += 1
-        
+
         network_results = get_classification(model,
-                                            word_merged,
-                                            char_merged)
+                                             np.array(word_data), np.array(char_data))
 
         index = 1
         pred_index = 0
@@ -84,8 +83,8 @@ def get_feature_vector(embed_dict, tweet_text, config):
                                                    max_word_size=config['char_max_word']))
 
 
-def get_classification(model, word_merged, char_merged):    
-    return model.predict(word_merged, char_merged)
+def get_classification(model, word_merged, char_merged):
+    return model.predict(word_merged, char_merged, batch_size=64)
 
 
 def load_input_file(filename):

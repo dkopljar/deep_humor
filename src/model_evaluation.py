@@ -47,10 +47,10 @@ class ModelEvaluator:
 
         predictions = []
         for b in range(num_batches):
-            input_word_b = input_word[b * batch_size:(b + 1) * batch_size][:,0]
-            input_char_b = input_char[b * batch_size:(b + 1) * batch_size][:,0]
-            input_word_b_2 = input_word[b * batch_size:(b + 1) * batch_size][:,1]
-            input_char_b_2 = input_char[b * batch_size:(b + 1) * batch_size][:,1]
+            input_word_b = input_word[b * batch_size:(b + 1) * batch_size][:, 0]
+            input_char_b = input_char[b * batch_size:(b + 1) * batch_size][:, 0]
+            input_word_b_2 = input_word[b * batch_size:(b + 1) * batch_size][:, 1]
+            input_char_b_2 = input_char[b * batch_size:(b + 1) * batch_size][:, 1]
             prediction = self.sess.run([self.pred_op],
                                        feed_dict={
                                            self.input_op_char_1: input_char_b,
@@ -65,10 +65,10 @@ class ModelEvaluator:
 
         # Last few examples didn't fit into any of the batches
         if batch_size * num_batches < size:
-            input_word_b = input_word[batch_size * num_batches:][:,0]
-            input_char_b = input_char[batch_size * num_batches:][:,0]
-            input_word_b_2 = input_word[batch_size * num_batches:][:,1]
-            input_char_b_2 = input_char[batch_size * num_batches:][:,1]
+            input_word_b = input_word[batch_size * num_batches:][:, 0]
+            input_char_b = input_char[batch_size * num_batches:][:, 0]
+            input_word_b_2 = input_word[batch_size * num_batches:][:, 1]
+            input_char_b_2 = input_char[batch_size * num_batches:][:, 1]
             prediction = self.sess.run([self.pred_op],
                                        feed_dict={
                                            self.input_op_char_1: input_char_b,

@@ -23,7 +23,16 @@ Unska 3, 10000 Zagreb, Croatia\\
 }
 
 \abstract{ 
-In this paper, we consider the task of comparative humor ranking in two manner: detecting which tweet of two is more humorous and ranking the given tweets by how humorous they are in three classes. We opted for different approaches based on recent deep neural models in order to eschew manual feature engineering. In evaluation section we experimented with bi-directional LSTMs and CNNs, in combination and separately. For constructing feature vectors we also experimented with \emph{GloVe} word embedding and character embedding. The system was tuned, trained and evaluated on SemEval-2017 Task 6 dataset for which it gives representative results.
+In this paper, we consider the task of comparative humor ranking in two manner:
+detecting which tweet of two is more humorous and ranking the given tweets by how
+humorous they are in three classes. We opted for different approaches based on
+recent deep neural models in order to eschew manual feature engineering. In
+evaluation section we experimented with the bi-directional LSTMs and CNNs, in
+combination and separately. For constructing feature vectors we used
+pre-trained Twitter \emph{GloVe} word embeddings along with trained character
+embedding.
+The system was trained, tuned, and evaluated on the SemEval-2017 Task 6 dataset
+for which it yields outstanding results.
 }
 
 \begin{document}
@@ -32,51 +41,116 @@ In this paper, we consider the task of comparative humor ranking in two manner: 
 
 \section{Introduction}
 
-Understanding humor expressed in the text is a challenging natural language problem which has not yet been addressed extensively in the current AI research. Humor is often subjective and relies on the vast knowledge base, which is sometimes hard to reason, even for humans. It is also important to say that what is humorous today might not be humorous tomorrow due to the fact that humor can be trend dependent.
-In this paper, we describe a system for humor detection and ranking. Our system is designed to solve two tasks. For the first task, the system is given two tweets and it should predict which tweet is more humorous. For the second task, the system is given a set of tweets and it should rank them in three categories (2 for the most humorous tweet, 1 for top ten humorous tweets and 0 otherwise). 
-To learn and test our model we used a novel dataset that was given in SemEval-2017 Task 6 \citep{potash2016hashtagwars}. Dataset consists of tweets that viewers sent as part of the Comedy Central show @midnight. For every episode topic for that show was defined and viewers were asked to send a humorous tweet about given topic. 
+Understanding humor expressed in the text is a challenging natural language 
+problem which has not yet been addressed extensively in the current AI research.
+Humor is often subjective and relies on the vast knowledge base, which is sometimes
+hard to reason, even for humans. It is also important to say that what is
+humorous today might not be humorous tomorrow due to the fact that humor can be
+trend dependent.
+
+In this paper, we describe a system for humor detection and
+ranking. Our system is designed to solve two tasks. For the first task, the
+system is given two tweets and it should predict the funnier tweet.
+For the second task, the system is given a set of tweets and it should rank them
+in three categories (2 for the most humorous tweet, 1 for top ten humorous
+tweets, and 0 otherwise). To learn and test our model we used a novel dataset that was
+given in SemEval-2017 Task 6 \citep{potash2016hashtagwars}. The dataset consists of
+the tweets that viewers sent as a part of the Comedy Central show @midnight. For every
+episode, topic was defined and viewers were asked to send humorous
+tweets on the given topic.
 
 \section{Related Work}
 
-In the last few years there were a lot of approaches in humor detection \citep{mihalcea2005,reyes2013,zhang2014,barbieri2014,yang2015}. Some of those works \citep{reyes2013,zhang2014,barbieri2014}, have also acquired humor dataset from Twitter.
+In the last few years there were a lot of approaches in humor detection \citep{mihalcea2005,reyes2013,zhang2014,barbieri2014,yang2015}.
+Some of those works \citep{reyes2013,zhang2014,barbieri2014} have also acquired
+humor dataset from Twitter. Most of the related works separate the apprehension 
+of humor into two groups: humor and non-humor, basically a binary classification.
+This representation ignores the continuous nature of humor, while also not accounting
+for the subjectivity in perceiving humor\citep{potash2016hashtagwars}.
 
-Most of those related works separates the apprehension of humor into two groups: humor and non-humor, basically a binary classification. Using this representation ignores continuous nature of humor, while also not accounting for the subjectivity in perceiving humor \citep{potash2016hashtagwars}.
+\section{Architecture}
 
-\section{Arhitecture}
+In this section, we describe the architecture of our system. Our most complex
+architecture consists of the bi-directional
+\emph{Long Short Term Memory}\cite{LSTM} layer, further referred as Bi-LSTM,
+convolutional layer\citep{cnn}, further referred as CNN, and a fully connected
+layer with a softmax layer at the end for predicting class probabilities.
 
-In this section, we describe architecture of our system. Our most complex architecture that we tested in this paper consists of bi-directional \emph{Long Short Term Memory}, further referred as Bi-LSTM, convolutional neural network, further referred as CNN, and fully connected neural network.
-
-The whole pipeline was  built using the open source frameworks
+The whole pipeline was built using the open source frameworks
 Tensorflow\citep{tensorflow}\footnote{\texttt{https://www.tensorflow.org/}}
 and
 scikit-learn\citep{scikit}\footnote{\texttt{http://scikit-learn.org/stable/index.html}}.
 
 \subsection{Recurrent Neural Networks}
 
-The main idea behind RNNs lies in retaining information from "history". In the context of NLP, history refers to observing the context of the sentence up to the currently processed word. Despite the promising results in short sentences, RNN losses its performance dramatically with the increasing sentence length due to the gradient vanishing \cite{bengio1994learning} and exploding problems \cite{pascanu2013difficulty}.
-
-LSTMs were designed with the purpose of correcting the RNNs shortcomings. Although LSTM can successfully capture the past context, it is sometimes good to have an insight at the future sentence context. Bi-LSTMs model this by adding an extra LSTM layer which has a reversed information flow meaning that the information is propagated from the end of the sentence towards the beginning. Output of a Bi-LSTM is a concatenated vector of the two opposite LSTM layers.
+The main idea behind RNNs lies in retaining information from "history". In the 
+context of NLP, history refers to observing the context of the sentence up to the
+currently processed word. Despite the promising results in short sentences, RNN
+losses its performance dramatically with the increasing sentence length due to 
+the gradient vanishing \cite{bengio1994learning} and exploding problems 
+\cite{pascanu2013difficulty}. LSTMs were designed with the purpose of correcting 
+the RNNs shortcomings. Although LSTM can successfully capture the past context,
+it is sometimes good to have an insight at the future sentence context. Bi-LSTMs 
+model implements this by adding an extra LSTM layer which has a reversed information flow
+meaning that the information is propagated from the end of the sentence towards
+the beginning. Output of a Bi-LSTM is a concatenated vector of the two opposite LSTM layers.
 
 \subsection{Convolutional Neural Networks}
-
-CNN networks are famous for their appliance in the \emph{Computer Vision} domain but have also demonstrated an ability to extract morphological information from word characters, encoding them into neural representations. We first create a hash map of all characters that appear in the dataset where values are arbitrarily assigned integer values. All sentence characters are then represented using their mapped integer values but the padding is also applied on the word level as shown in Figure \ref{fig:cnn_embed}. Encoded sentence represents an input which is fed into a trainable character embedding layer of $C_e \times V$ dimensions, where $C_e$ is the character embedding size, and $V$ is the number of unique characters in the dataset.
+CNN networks are famous for their appliance in the \emph{Computer Vision}
+domain but have also demonstrated an ability to extract morphological information
+from word characters, encoding them into neural representations. We first create
+a hash map of all characters that appear in the dataset where values are arbitrarily
+assigned integer values. All sentence characters are then represented using their
+mapped integer values but the padding is also applied on the word level as shown
+in Figure \ref{fig:cnn_embed}. Encoded sentence represents an input which is fed
+into a trainable character embedding layer of $C_e \times V$ dimensions, where
+$C_e$ is the character embedding size, and $V$ is the number of unique characters in the dataset.
 
 \begin{figure}
-  \caption{CNN arhitecture}
+  \caption{Word embeddings and the CNN architecture}
   \label{fig:cnn_embed}
   \centering
     \includegraphics[width=0.4\textwidth]{imgs/cnn_embed.png}
 \end{figure}
 
-One dimensional convolution is applied after the dropout which yields character
-feature vectors. Generated vectors are concatenated with the word embedding
-vectors. Word embeddings are pretrained vectors that model the inter word
-relatedness. We used Twitter
-Glove\citep{GLove}\footnote{\texttt{https://nlp.stanford.edu/projects/glove/}}
-embeddings with vector size of 100.
+\subsection{Used models}
+
+\subsubsection{CNN network}
+Previous work\cite{onaj_rad_s_cnn} has demonstrated that CNN are top performers
+when it comes to capturing humor. Our first model consists of the character
+embedding layer followed by a 1-D CNN layer for extracting features. CNN tweet
+features are joined and fed into a fully connected layer with a softmax layer
+for predicting classes. 
+
+\subsubsection{Bi-LSTM network}
+Our second model is a pure bi-directional recurrent model with LSTM cells. As
+input features we use $100$ dimensional \emph{GloVe}
+\citep{GLove}\footnote{\texttt{https://nlp.stanford.edu/projects/glove/}}vectors trained on the $27B$
+Twitter dataset. Fully connected and softmax layers are also placed at the
+networks end.
+
+\subsubsection{CNN + Bi-LSTM network}
+To use the best of each of the convolutional and recurrent networks, we
+construct a merged network consisting of the word embedding, CNN, Bi-LSTM, and
+a fully connected layer. We hope this network can capture inter word relations
+using the Bi-LSTM module as well as the inter character features with the CNN
+layer.
 
 \section{Dataset}
-In this paper, we trained and evaluated models on the dataset that was created from tweets of viewers who watched TV show @midnight. As part of this "game-show" viewers were asked to write a humorous message about a topic that was announced in the show. The day of the ensuing episode, @midnight would create a post that announced the top-10 tweets from the previous episode. The whole dataset consists of 11,685 tweets about 106 different topics. Every tweet in the dataset is labeled in one of the three labels. Label 2 indicates winning tweet, label 1 indicates that tweet was selected as top-10 and label 0 intended for all other tweets. A number of tweets per topic vary among different topics, but 71\% of topics contain at least 90 tweets. Topics with the lowest number of tweets have 20 tweets, and topics with the highest number of tweets have 180 tweets. It is also important to note that for some topics like "FastFoodBooks" external knowledge is required to understand the humor, while for other like "IfIWerePresident" it isn't.
+In this paper, we trained and evaluated models on the dataset that was created
+from tweets of viewers who watched TV show @midnight. As part of this "game-show"
+viewers were asked to write a humorous message about a topic that was announced
+in the show. The day of the ensuing episode, @midnight would create a post that
+announced the top-10 tweets from the previous episode. The whole dataset consists
+of 11,685 tweets about 106 different topics. Every tweet in the dataset is
+labeled in one of the three labels. Label 2 indicates winning tweet, label 1
+indicates that tweet was selected as top-10 and label 0 intended for all other
+tweets. A number of tweets per topic vary among different topics, but 71\% of
+topics contain at least 90 tweets. Topics with the lowest number of tweets have 
+20 tweets, and topics with the highest number of tweets have 180 tweets. It is 
+also important to note that for some topics like "FastFoodBooks" external
+knowledge is required to understand the humor, while for other like
+"IfIWerePresident" it isn't.
 
 \section{Experiments}
 We divide this section into two parts: the former one reporting results on the
@@ -85,10 +159,10 @@ non-evaluation data, and the latter results on the official evaluation data.
 \subsection{Non-evaluation data results}
 During the model training and evaluation we used a k-fold cross-validation technique
 ($k=35$) to properly optimize our models hyper-parameters. Grid search
-method was not feasible in our case due to the large parameters
+method was not feasible in our case due to large parameters
 search space and slow training time. Our method was to change each parameter
 value from the low to high extremes and see how it affects the model
-performance, in the end interpolating to find near optimal parameters. 
+performance, in the end interpolating to find near optimal parameters.
 In addition to using dropout for regularization, we also employed the
 early-stopping\cite{early_stopping} method to achieve the best possible validation
 performance. Table \ref{tab:hyperparams} shows the final hyper-parameters used
@@ -106,7 +180,7 @@ Adam\cite{Adam}.
  \midrule
      Dropout rate & 0.5\\
      BLSTM hidden state & 128\\
-     Timestep & 30\\
+     Sentence timestep & 30\\
      Learning rate & 0.0002\\
      CNN filter size & 60 \\
      FC layer size & 256\\
@@ -118,10 +192,12 @@ Adam\cite{Adam}.
 
 Our model is trained to maximize the class probability $p(y \vert x)$ using
 cross-entropy as the loss function. Output $1$ means that the first tweet was
-funnier and $0$ otherwise.
+funnier and $0$ otherwise. 
 In our results, we report results in form of
 four metrics: accuracy, precision, recall and F1 score. All entries represent
-$95\%$ confidence intervals calculated from the $35$ validation runs.
+$95\%$ confidence intervals calculated from the $35$ k-fold validation runs.
+Each of the runs was trained for only one epoch due to severe overfitting
+problems after the first epoch.
 
 \begin{table}
 \scriptsize
@@ -131,13 +207,12 @@ $95\%$ confidence intervals calculated from the $35$ validation runs.
  \begin{center}
  \begin{tabular}{l|llll}
  \toprule
-     & Baseline & BLSTM & CNN & CNN + BLSTM\\
+     & Baseline & Bi-LSTM & CNN & CNN + Bi-LSTM\\
  \midrule
      Accuracy & 50.1 $\pm$ 0.2 & \textbf{67.8 $\pm$ 1.7} & 52.9 $\pm$ 1.4  & 67.0 $\pm$
      1.7\\
 
      Precision & 49.8 $\pm$ 0.3 & \textbf{68.2 $\pm$ 1.7}  & 54.1 $\pm$ 1.4& 67.4 $\pm$ 1.7\\
-
      Recall & 50.3 $\pm$ 0.2 & \textbf{67.8 $\pm$ 1.7} & 52.9 $\pm$ 1.4& 67.0 $\pm$ 1.7\\
 
      F1 & 50.0 $\pm$ 0.2 & \textbf{67.8 $\pm$ 1.7}  & 53.2 $\pm$ 1.4 & 67.0 $\pm$ 1.7\\
@@ -149,13 +224,14 @@ $95\%$ confidence intervals calculated from the $35$ validation runs.
 
 In Table \ref{tab:conf_95_dev} are the results from the non-evaluation data.
 Baseline model randomly guesses the funnier tweet and is expected to have
-metrics around $50\%$.
+metrics around $50\%$. We can see that the Bi-LSTM model performs the best so
+we further reference it as our best model.
 
 \subsection{Evaluation data results}
 In this section we demonstrate how our best model compares with other solutions on the official
 evaluation data. Note that the accuracy and distance measurements listed in
 Table \ref{tab:task_a_official} and Table \ref{tab:task_b_official} are
-defined by the task organizers\cite{semeval_paper}.
+defined by the task organizers\citep{potash2016hashtagwars}.
 
 \begin{table}
   \caption{Official Task A results in comparison with our model}
@@ -165,8 +241,8 @@ defined by the task organizers\cite{semeval_paper}.
  \toprule
      Team & Accuracy\\
  \midrule
+     \textbf{Bi-LSTM} & 69.1 \\
      HumorHawk & 67.5 \\
-     \textbf{CNN + Bi-LSTM} & 66.7 \\
      TakeLab & 64.1\\
      HumorHawk & 63.7\\
      DataStories & 63.2\\
@@ -177,7 +253,8 @@ defined by the task organizers\cite{semeval_paper}.
 \end{table}
 
 \begin{table}
-  \caption{Official Task B results in comparison with our model}
+    \caption{Official Task B results in comparison with our model (lower is
+    better)}
  \label{tab:task_b_official}
  \begin{center}
  \begin{tabular}{ll}
@@ -185,8 +262,8 @@ defined by the task organizers\cite{semeval_paper}.
      Team & Distance\\
  \midrule
      Duluth & 0.872 \\
+     \textbf{Bi-LSTM} & 0.881 \\
      TakLab & 0.908\\
-     \textbf{CNN + Bi-LSTM} & 0.912 \\
      QUB & 0.924\\
      QUB & 0.924\\
      SVNIT@SemEval & 0.938\\
@@ -195,12 +272,12 @@ defined by the task organizers\cite{semeval_paper}.
  \end{center}
 \end{table}
 
-Our best model compares fairly well ranking second in the Task A and third in
-Task B. Although our best model on the CV validation is Bi-LSTM, we chose 
-CNN + Bi-LSTM because of the overfitting problems during training. It seems that
-the dataset is extremely prone because we see validation performance drop
-already after the first epoch. CNN + Bi-LSTM gave us the smaller validation
-error so we opted for it instead of the Bi-LSTM model.
+Our top model outperforms the best result in the Task A by a margin of
+$1.6\%$, placing our model at the top of the list. In Task B, our model ranks
+second which is still competitive because the best team in Task A doesn't even
+have top results in Task B, meaning our model can perform well on both tasks.
+
+
 
 % \subsection{Figures}
 

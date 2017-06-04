@@ -186,7 +186,7 @@ defined by the task organizers\cite{semeval_paper}.
  \midrule
      Duluth & 0.872 \\
      TakLab & 0.908\\
-     \textbf{Our model} & 0.9 \\
+     \textbf{CNN + Bi-LSTM} & 0.912 \\
      QUB & 0.924\\
      QUB & 0.924\\
      SVNIT@SemEval & 0.938\\
@@ -195,8 +195,12 @@ defined by the task organizers\cite{semeval_paper}.
  \end{center}
 \end{table}
 
-Write something about comparison.
-
+Our best model compares fairly well ranking second in the Task A and third in
+Task B. Although our best model on the CV validation is Bi-LSTM, we chose 
+CNN + Bi-LSTM because of the overfitting problems during training. It seems that
+the dataset is extremely prone because we see validation performance drop
+already after the first epoch. CNN + Bi-LSTM gave us the smaller validation
+error so we opted for it instead of the Bi-LSTM model.
 
 % \subsection{Figures}
 

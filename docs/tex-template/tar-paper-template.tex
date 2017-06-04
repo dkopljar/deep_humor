@@ -111,7 +111,7 @@ characters in the corpus.
 \subsection{Used models}
 
 \subsubsection{CNN network}
-Previous work \citep{onaj_rad_s_cnn} has demonstrated that CNN are top performers
+Previous work \citep{potash2016hashtagwars} has demonstrated that CNN are top performers
 when it comes to capturing humor. Our first model consists of the character
 embedding layer followed by a 1-D CNN layer for extracting features. CNN tweet
 features are joined and fed into a fully connected layer with a softmax layer
@@ -131,7 +131,6 @@ using the Bi-LSTM module as well as the inter character features with the CNN
 layer.
 
 \section{Dataset}
-<<<<<<< HEAD
 In this paper, we trained and evaluated models on the dataset that was created
 from tweets of viewers who watched TV show @midnight. As part of this "game-show"
 viewers were asked to write a humorous message about a topic that was announced
@@ -151,7 +150,7 @@ knowledge is required to understand the joke, while for others like
 We divide this section into two parts: the former one reporting results on the non-evaluation data, and the latter results on the official evaluation data.
 
 \subsection{Non-evaluation data results}
-During the model training and evaluation we used a k-fold cross-validation technique ($k=35$) to properly optimize our models hyper-parameters. Grid search method was not feasible in our case due to large parameters search space and slow training time. Our method was to change each parameter value from the low to high extremes and see how it affects the model performance, in the end interpolating to find near optimal parameters. In addition to using dropout for regularization, we also employed the early-stopping \citep{early_stopping} method to achieve the best possible validation performance. Table \ref{tab:hyperparams} shows the final hyper-parameters used in training and validation. For the optimization algorithm we used Adam \citep{adam2014}.
+During the model training and evaluation we used a k-fold cross-validation technique ($k=35$) to properly optimize our models hyper-parameters. Grid search method was not feasible in our case due to large parameters search space and slow training time. Our method was to change each parameter value from the low to high extremes and see how it affects the model performance, in the end interpolating to find near optimal parameters. In addition to using dropout for regularization, we also employed the early-stopping \citep{caruana2000overfitting} method to achieve the best possible validation performance. Table \ref{tab:hyperparams} shows the final hyper-parameters used in training and validation. For the optimization algorithm we used Adam \citep{adam2014}.
 
 \begin{table}
 \small

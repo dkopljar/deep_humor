@@ -65,8 +65,7 @@ def generate(input_dir, output_dir, model, config):
             index += 1
 
         results = sorted(results.items(), key=lambda x: x[1], reverse=True)
-        list_keys = list(results.keys())
-        if results[list_keys[0]] == results[list_keys[1]]:
+        if results[0][0] == results[1][0]:
             print("They are the same!!! NOOOOOOO!")
         write_output_file(output_filename, results)
 

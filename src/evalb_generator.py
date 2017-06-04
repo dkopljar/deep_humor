@@ -64,6 +64,10 @@ def generate(input_dir, output_dir, model, config):
 
             index += 1
 
+        results = sorted(results.items(), key=lambda x: x[1], reverse=True)
+        list_keys = list(my_dict.keys())
+        if results[list_keys[0]] == results[list_keys[1]]:
+            print("They are the same!!! NOOOOOOO!")
         write_output_file(output_filename, results)
 
 
@@ -98,8 +102,7 @@ def load_input_file(filename):
 
 def write_output_file(filename, results):
     with open(filename, 'w') as f:
-        for tweetID, count in sorted(results.items(), key=lambda x: x[1],
-                                     reverse=True):
+        for tweetID, count in results:
             f.write(tweetID + "\n")
 
 

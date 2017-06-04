@@ -12,19 +12,18 @@
 \usepackage{amsmath}
 \usepackage{amssymb}
 
-\title{Template for writing TAR project papers}
+\title{Shit-of-the-art humor detection}
 
-\name{Author1, Author2, Author3} 
+\name{Bartol Freškura, Filip Gulan, Damir Kopljar}
 
 \address{
 University of Zagreb, Faculty of Electrical Engineering and Computing\\
-Unska 3, 10000 Zagreb, Croatia\\ 
-\texttt{autor1@xxx.hr}, \texttt{\{autor2,autor3\}@zz.com}\\
+Unska 3, 10000 Zagreb, Croatia\\
+\texttt{\{bartol.freskura, filip.gulan, damir.kopljar\}@fer.hr}\\
 }
-          
-         
+
 \abstract{ 
-This document provides the instructions on formatting the TAR project paper in \LaTeX{}. This is where you write the abstract (i.e., summary) of the work you carried out. The abstract is a paragraph of text ranging between 70 and 150 words.
+This is the paper abstract.
 }
 
 \begin{document}
@@ -32,33 +31,22 @@ This document provides the instructions on formatting the TAR project paper in \
 \maketitleabstract
 
 \section{Introduction}
+Introduction
 
-This section is the introduction to your paper. Introduction should not be too elaborate, that is what other sections are for (the Introduction should definitely not spill over to the second page). 
-
-This is the second paragraph of the introduction. In \LaTeX , paragraphs are separated by inserting an empty line in between them.  Avoid very large paragraphs (larger than half of the page height), but also avoid tiny paragraphs (e.g., one-sentence paragraphs).
-
-\section{Second section}
+\section{Related Work}
 
 In scientific papers, this section usually (but not necessarily) briefly describes the related research. 
 
-\subsection{First subsection}
-\label{sec:first}
-
-This is a subsection of the second section.
-
-\subsection{Second subsection}
-
-This is the second subsection of the second section. Referencing the (sub)sections in text is performed as follows: ``in Section \ref{sec:first} we have shown \dots''.
-
-\subsubsection{Sub-subsection example} 
-
-This is a sub-subsection. If possible, it is better to avoid sub-subsections. 
-
-\section{Extent of the paper}
+\section{Our model architecture}
 
 The paper should have a minimum of 3 and a maximum of 5 pages, plus an additional page for references.
 
-\section{Figures and tables}
+\subsection{Recurrent Neural Networks}
+
+\subsection{Convolutional Neural Networks}
+
+
+\section{Data}
 
 \subsection{Figures}
 
@@ -117,7 +105,7 @@ C & A very long text, longer that the width of a single column & $-32$\\
 \end{center}
 \end{table*}
 
-\section{Math expressions and formulas}
+\section{Experiments}
 
 Math expressions and formulas that appear within the sentence should be written inside the so-called \emph{inline} math environment: $2+3$, $\sqrt{16}$, $h(x)=\mathbf{1}(\theta_1 x_1 + \theta_0>0)$. Larger expressions and formulas (e.g., equations) should be written in the so-called \emph{displayed} math environment:
 
@@ -151,28 +139,13 @@ $Consistent(h,\mathcal{D})$.
 If you need a math symbol, but you don't know the corresponding \LaTeX{} command that generates it, try
 \emph{Detexify}.\footnote{\texttt{http://detexify.kirelabs.org/}}
 
-\section{Referencing literature}
-
-References to other publications should be written in brackets with the last name of the first author and the year of publication, e.g., \citep{chomsky-73}.  Multiple references are written in sequence, one after another, separated by semicolon and without whitespaces in between, e.g., \citep{chomsky-73,chave-64,feigl-58}. References are typically written at the end of the sentence and necessarily before the sentence punctuation.
-
-If the publication is authored by more than one author, only the name of the first author is written, after which abbreviation \emph{et al.}, meaning \emph{et alia}, i.e.,~and others is written as in \citep{johnson-etc}. If the publication is authored by only two authors, then the last names of both authors are written \citep{johnson-howells}.
-
-If the name of the author is incorporated into the text of the sentence, it should not be in the brackets (only the year should be there). E.g.,~``\citet{chomsky-73}
-suggested that \dots''. The difference is whether you reference the publication or the author who wrote it. 
-
-The list of all literature references is given alphabetically at the end of the paper. The form of the reference depends on the type of the bibliographic unit: conference papers,
-\citep{chave-64}, books \citep{butcher-81}, journal articles
-\citep{howells-51}, doctoral dissertations \citep{croft-78}, and book chapters \citep{feigl-58}. 
-
-All of this is automatically produced when using BibTeX. Insert all the BibTeX entries into the file \texttt{tar2016.bib}, and then reference them via their symbolic names.
-
 \section{Conclusion}
 
 Conclusion is the last enumerated section of the paper. It should not exceed half of a column and is typically split into 2--3 paragraphs. No new information should be presented in the conclusion; this section only summarizes and concludes the paper.
 
 \section*{Acknowledgements}
 
-If suitable, you can include the \textit{Acknowledgements} section before inserting the literature references  in order to thank those who helped you in any way to deliver the paper, but are not co-authors of the paper.
+Hvala svima u studiju i režiji.
 
 \bibliographystyle{tar2016}
 \bibliography{tar2016} 

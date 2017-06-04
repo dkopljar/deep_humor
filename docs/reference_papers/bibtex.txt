@@ -21,3 +21,38 @@
   year={2012},
   organization={Association for Computational Linguistics}
 }
+
+@article{hochreiter1997long,
+  title={Long short-term memory},
+  author={Hochreiter, Sepp and Schmidhuber, J{\"u}rgen},
+  journal={Neural computation},
+  volume={9},
+  number={8},
+  pages={1735--1780},
+  year={1997},
+  publisher={MIT Press}
+}
+
+@article{lecun1995convolutional,
+  title={Convolutional networks for images, speech, and time series},
+  author={LeCun, Yann and Bengio, Yoshua and others},
+  journal={The handbook of brain theory and neural networks},
+  volume={3361},
+  number={10},
+  pages={1995},
+  year={1995}
+}
+
+@article{ma2016end,
+  title={End-to-end sequence labeling via bi-directional lstm-cnns-crf},
+  author={Ma, Xuezhe and Hovy, Eduard},
+  journal={arXiv preprint arXiv:1603.01354},
+  year={2016}
+}
+
+@article{kingma2014adam,
+  title={Adam: A method for stochastic optimization},
+  author={Kingma, Diederik and Ba, Jimmy},
+  journal={arXiv preprint arXiv:1412.6980},
+  year={2014}
+}

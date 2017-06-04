@@ -24,23 +24,52 @@ def clear_tweet(tweet):
     return tweet
 
 
-def tweet_to_integer_vector(tweet, tweet_char_count=70):
+def tweet_to_integer_vector(tweet, max_word_size, timestep):
     """
-    Maps given tweet (it will lowercase it) to np.array of constants.TWEET_CHARACTER_COUNT dimension, 
-    with zeros as padding and ending vector with defined character (41)
-    :param tweet: Tweet
+    Creates characters mappings in the following manner:
+    1) Map each character to its id (using a hash map)
+    2) Split the sentence into words
+    3) For each word, map each char to its ID, and pad for the max_word_size
+    4) Do this for every word in the sentence
+    5) Creats a sentence representation of dimension max_word_size * timestep
+
+    :param timestep: Sentence timestep
+    :param max_word_size: Maximum word size in number of characters
+    :param tweet: Tweet in a string form
     :return: Integer vector for given tweet
     """
     tweet = clear_tweet(tweet.lower())
-    vector = np.zeros(tweet_char_count, dtype=np.int)
-    last_index = 0
-    for index, character in enumerate(tweet):
-        last_index = index
-        if index == tweet_char_count - 1:  # leave space for ending character
-            break
-        vector[index] = char_mapper.map_letter_to_int(character)
-    vector[last_index] = char_mapper.map_letter_to_int('end')
-    return vector
+
+    new_sent = np.zeros(timestep * max_word_size, dtype=np.int32)
+    new_sent_temp = []
+    for token in tweet.split(" "):
+
+        # Zeroes are used as a padding
+        char_embeddings = np.zeros(max_word_size, dtype=np.uint8)
+        char_mapped = np.array([char_mapper.map_letter_to_int(c) for c in token])
+
+        if len(char_mapped) > max_word_size:
+            char_embeddings = char_mapped[:max_word_size]
+        elif len(char_mapped) < max_word_size:
+            pad_size = (max_word_size - len(char_mapped)) // 2
+            for i in range(len(char_mapped)):
+                char_embeddings[i + pad_size] = char_mapped[i]
+        else:
+            char_embeddings = char_mapped
+        new_sent_temp.extend(char_embeddings)
+
+    new_sent_temp = np.array(new_sent_temp)
+    if len(new_sent_temp) > timestep * max_word_size:
+        new_sent = new_sent_temp[:len(new_sent)]
+
+    elif len(new_sent_temp) < timestep * max_word_size:
+        new_sent[:len(new_sent_temp)] = new_sent_temp
+    else:
+        new_sent = new_sent_temp
+
+    assert new_sent.shape[0] == timestep * max_word_size
+
+    return new_sent
 
 
 def loadGlove(glove_file):
@@ -48,6 +77,20 @@ def loadGlove(glove_file):
 
     logging.info("Loading glove file...")
     with open(glove_file) as f:
+        for line in f:
+            split = line.split()
+            token = split[0]
+            vec = np.array([np.float(x) for x in split[1:]])
+            embed_dict[token] = vec
+
+    return embed_dict
+
+
+def load_fastText_dict(fast_text):
+    embed_dict = {}
+    logging.info("Loading glove file...")
+
+    with open(fast_text, "r") as f:
         for line in f:
             split = line.split()
             token = split[0]
@@ -148,10 +191,10 @@ def createGlovefromTweet(embed_dict, tweetText, embedding_dim=100,
     sentenceRow = np.zeros((embedding_dim, timestep))
     for j, token in enumerate(tokens[:timestep]):
         if token in embed_dict:
-            sentenceRow[:, j] = embed_dict[token.lower()]
+            sentenceRow[:, j] = embed_dict[token]
         else:
-            tmp = np.ones(embedding_dim) / 20
-            sentenceRow[:, j] = tmp
+            sentenceRow[:, j] = np.ones(embedding_dim) / 20
+
     return sentenceRow
 
 
@@ -171,30 +214,24 @@ def create_pair_combs(lst):
             if int(element1[-1]) == int(element2[-1]):
                 continue
             if int(element1[-1]) < int(element2[-1]):
+                # Second pair is funnier
                 if np.random.random() > 0.5:
-                    concatMatrix = np.concatenate((element1[0], element2[0]),
-                                                  axis=1)
-                    chr_merged = np.concatenate((element1[1], element2[1]),
-                                                axis=0)
+                    concatMatrix = np.array([element1[0], element2[0]], dtype=np.float32)
+                    chr_merged = np.array([element1[1], element2[1]], dtype=np.int32)
                     pairs_labels.append(0)
                 else:
-                    concatMatrix = np.concatenate((element2[0], element1[0]),
-                                                  axis=1)
-                    chr_merged = np.concatenate((element2[1], element1[1]),
-                                                axis=0)
+                    concatMatrix = np.array([element2[0], element1[0]], dtype=np.float32)
+                    chr_merged = np.array([element2[1], element1[1]], dtype=np.int32)
                     pairs_labels.append(1)
             else:
+                # First pair is funnier
                 if np.random.random() > 0.5:
-                    concatMatrix = np.concatenate((element2[0], element1[0]),
-                                                  axis=1)
-                    chr_merged = np.concatenate((element2[1], element1[1]),
-                                                axis=0)
+                    concatMatrix = np.array([element2[0], element1[0]], dtype=np.float32)
+                    chr_merged = np.array([element2[1], element1[1]], dtype=np.int32)
                     pairs_labels.append(0)
                 else:
-                    concatMatrix = np.concatenate((element1[0], element2[0]),
-                                                  axis=1)
-                    chr_merged = np.concatenate((element1[1], element2[1]),
-                                                axis=0)
+                    concatMatrix = np.array([element1[0], element2[0]], dtype=np.float32)
+                    chr_merged = np.array([element1[1], element2[1]], dtype=np.int32)
                     pairs_labels.append(1)
 
             # Add word and char level information

@@ -73,8 +73,9 @@ def create_seperate_dataset(data, num_classes):
     return utils.shuffle_data([word_repr, char_repr, labels])
 
 
-def main(config):
+def main(config, final_eval=False):
     """
+    :param final_eval: Whether to do final model training on all data
     :param config: Loaded configuration dictionary
     :return:
     """
@@ -90,62 +91,87 @@ def main(config):
     # Generate pairs
     all_data = create_data_sets(train_pickle_dir)
 
-    # Create K-fold object generator
-    k_fold = KFold(n_splits=config['cross_val_k'], shuffle=True,
-                   random_state=config['random_seed'])
-    k_fold.get_n_splits(all_data)
+    if final_eval:
+        x_train_word, x_train_chr, y_train = create_data_pairs(all_data)
 
-    # Do training for every fold
-    for fold, (train_index, test_index) in enumerate(k_fold.split(all_data)):
-        logging.info(
-            "Now starting fold {}/{}".format(fold + 1, config['cross_val_k']))
-        train_data = all_data[train_index]
-        dev_data = all_data[test_index]
-
-        x_train_word, x_train_chr, y_train = create_data_pairs(train_data)
-        x_dev_word, x_dev_chr, y_dev = create_data_pairs(dev_data)
-
-        # Memory cleanup
-        del train_data
-        del dev_data
-
-        assert x_train_word.shape[2] == config['timestep'] * 2
-        assert y_train.shape[1] == config['n_classes']
-        assert x_train_chr.shape[1] == config['char_timestep'] * 2
-        assert x_train_chr.shape[0] == y_train.shape[0] == x_train_word.shape[0]
-
-        # Mock data
         config['train_examples'] = x_train_word.shape[0]
-        config['validation_examples'] = x_dev_word.shape[0]
+        config['validation_examples'] = 0
         config['save_dir'] = os.path.join(constants.TF_WEIGHTS)
-
-        config['train_word'] = None
-        config['valid_word'] = None
-        config['train_chr'] = None
-        config['valid_chr'] = None
-        config['train_label'] = None
-        config['valid_label'] = None
-        # Log configuration
-        logging.info("CONFIG:")
-        logging.info("\n".join([k + ": " + str(v) for k, v in config.items()]))
 
         # Add datasets to config
         config['train_word'] = x_train_word
-        config['valid_word'] = x_dev_word
+        config['valid_word'] = np.array([])
         config['train_chr'] = x_train_chr
-        config['valid_chr'] = x_dev_chr
+        config['valid_chr'] = np.array([])
         config['train_label'] = y_train
-        config['valid_label'] = y_dev
+        config['valid_label'] = np.array([])
 
         # +1 for unknown words
         config['char_vocab_size'] = len(char_mapper.letter_to_int_dict) + 1
 
         # Train all three
-        net = models.CNN_BILST_FC(config)
+        net = models.BILSTM_FC(config)
         net.train()
+    else:
+        # Create K-fold object generator
+        k_fold = KFold(n_splits=config['cross_val_k'], shuffle=True,
+                       random_state=config['random_seed'])
+        k_fold.get_n_splits(all_data)
 
-        # Recreate graph
-        tf.reset_default_graph()
+        # Do training for every fold
+        for fold, (train_index, test_index) in enumerate(
+                k_fold.split(all_data)):
+            logging.info(
+                "Now starting fold {}/{}".format(fold + 1,
+                                                 config['cross_val_k']))
+            train_data = all_data[train_index]
+            dev_data = all_data[test_index]
+
+            x_train_word, x_train_chr, y_train = create_data_pairs(train_data)
+            x_dev_word, x_dev_chr, y_dev = create_data_pairs(dev_data)
+
+            # Memory cleanup
+            del train_data
+            del dev_data
+
+            assert x_train_word.shape[3] == config['timestep']
+            assert y_train.shape[1] == config['n_classes']
+            assert x_train_chr.shape[2] == config['char_max_word'] * config['timestep']
+            assert x_train_chr.shape[0] == y_train.shape[0] == x_train_word.shape[0]
+
+            # Mock data
+            config['train_examples'] = x_train_word.shape[0]
+            config['validation_examples'] = x_dev_word.shape[0]
+            config['save_dir'] = os.path.join(constants.TF_WEIGHTS)
+
+            config['train_word'] = None
+            config['valid_word'] = None
+            config['train_chr'] = None
+            config['valid_chr'] = None
+            config['train_label'] = None
+            config['valid_label'] = None
+            # Log configuration
+            logging.info("CONFIG:")
+            logging.info(
+                "\n".join([k + ": " + str(v) for k, v in config.items()]))
+
+            # Add datasets to config
+            config['train_word'] = x_train_word
+            config['valid_word'] = x_dev_word
+            config['train_chr'] = x_train_chr
+            config['valid_chr'] = x_dev_chr
+            config['train_label'] = y_train
+            config['valid_label'] = y_dev
+
+            # +1 for unknown words
+            config['char_vocab_size'] = len(char_mapper.letter_to_int_dict) + 1
+
+            # Train all three
+            net = models.BILSTM_FC(config)
+            net.train()
+
+            # Recreate graph
+            tf.reset_default_graph()
 
 
 def parse_arguments():
@@ -182,4 +208,4 @@ if __name__ == "__main__":
                         level=logging.DEBUG, datefmt='%d/%m/%Y %I:%M:%S %p')
 
     logging.info("Numpy random seed set to " + str(seed))
-    main(config=config)
+    main(config=config, final_eval=False)

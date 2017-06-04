@@ -13,17 +13,12 @@ import dataset_parser
 import model_evaluation
 import utils
 
-config = utils.read_config(os.path.join(constants.CONFIGS, "cnn_lstm.ini"))
 
-
-
-def generate(input_dir, output_dir):
+def generate(input_dir, output_dir, model, config):
     print("Loading glove file...")
     glove = dataset_parser.loadGlove(constants.GLOVE_PATH)
     print("Loaded glove file!")
 
-    model = model_evaluation.ModelEvaluator(os.path.join(constants.TF_WEIGHTS,
-                                                         "CNN_BILSTM_FC_model_v_loss_0.594036339069.ckpt-660"))
     input_files = os.listdir(input_dir)
     target_hashtags = [os.path.splitext(gf)[0] for gf in input_files]
     print('Target hashtags: {} ({})'.format(len(target_hashtags),
@@ -44,10 +39,10 @@ def generate(input_dir, output_dir):
                 if tweetID1 == tweetID2:
                     continue
 
-                word_vect1, char_vect1 = get_feature_vector(glove, tweet_text1)
-                word_vect2, char_vect2 = get_feature_vector(glove, tweet_text2)
-                word_merged = np.concatenate((word_vect1, word_vect2), axis=1)
-                char_merged = np.concatenate((char_vect1, char_vect2), axis=0)
+                word_vect1, char_vect1 = get_feature_vector(glove, tweet_text1, config)
+                word_vect2, char_vect2 = get_feature_vector(glove, tweet_text2, config)
+                word_merged = np.array([word_vect1, word_vect2])
+                char_merged = np.array([char_vect1, char_vect2])
                 word_data.append(word_merged)
                 char_data.append(char_merged)
 
@@ -70,12 +65,13 @@ def generate(input_dir, output_dir):
         write_output_file(output_filename, results)
 
 
-def get_feature_vector(embed_dict, tweet_text):
+def get_feature_vector(embed_dict, tweet_text, config):
     return (dataset_parser.createGlovefromTweet(embed_dict, tweet_text,
                                                 timestep=config['timestep']),
             dataset_parser.tweet_to_integer_vector(tweet_text,
-                                                   tweet_char_count=config[
-                                                       'char_timestep']))
+                                                   timestep=config[
+                                                       'timestep'],
+                                                   max_word_size=config['char_max_word']))
 
 
 def get_classification(model, word_merged, char_merged):
@@ -99,10 +95,13 @@ def write_output_file(filename, results):
 
 
 if __name__ == '__main__':
-    if len(sys.argv) != 3:
-        print('Usage:', __file__, '<input_dir> <output_dir>')
+    if len(sys.argv) != 5:
+        print('Usage:', __file__, '<input_dir> <output_dir> <model_path> <config_path>')
         print('Input directory contains tsv files for each theme.')
         sys.exit(1)
 
-    _, input_dir, output_dir = sys.argv
-    generate(input_dir, output_dir)
+    _, input_dir, output_dir, model_path, config_path = sys.argv
+    model = model_evaluation.ModelEvaluator(model_path)
+    config = utils.read_config(config_path)
+
+    generate(input_dir, output_dir, model, config)

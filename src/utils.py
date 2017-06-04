@@ -2,12 +2,14 @@ import configparser
 import os
 import zipfile
 
+import nltk
 import numpy as np
 import wget
 from sklearn.metrics import accuracy_score, f1_score, recall_score, \
     precision_score
 
 import constants
+import hybrid_vector_generator
 
 
 def calc_metric(y_true, y_pred):
@@ -46,7 +48,7 @@ def read_config(config_file):
     conf_dict['lstm_hidden'] = int(config["MODEL"]['lstm hidden state dim'])
     conf_dict['batch_size'] = int(config["MODEL"]['batch size'])
     conf_dict['domain'] = config["GENERAL"]['domain']
-    conf_dict['char_timestep'] = int(config["MODEL"]['char timestep'])
+    conf_dict['char_max_word'] = int(config["MODEL"]['char max word'])
     conf_dict['early_stopping'] = int(config["MODEL"]['early stopping'])
     conf_dict['train_epochs'] = int(config["GENERAL"]['training epochs'])
     conf_dict['n_classes'] = int(config["MODEL"]['classes'])
@@ -159,3 +161,68 @@ def split_data(input, labels, test_size=0.4):
 
     return train_word, valid_word, test_word, \
            train_label, valid_label, test_label
+
+
+def extract_data(line):
+    """
+    Extracts a floating value from the statistical result
+    :param line:
+    :return:
+    """
+    data = line.rstrip().split(" ")[-1]
+    return float(data[:-1])  # remove percentange
+
+
+def read_log_file(file):
+    """
+    Extracts final evaluation metrics from the log files
+    :param file: Log file
+    :return: Accuracy, precision, recall and f1 arrays
+    """
+    acc, prec, rec, f1s = [], [], [], []
+    with open(file, "r") as f:
+        lines = f.readlines()
+    for i, line in enumerate(lines):
+        if "Finished epoch 1" in line:
+            data = lines[i - 6:i - 2]
+            acc.append(extract_data(data[0]))
+            prec.append(extract_data(data[1]))
+            rec.append(extract_data(data[2]))
+            f1s.append(extract_data(data[3]))
+
+    return np.array(acc), np.array(prec), np.array(rec), np.array(f1s)
+
+
+def export_twitter_for_fastText(train_dir, export_file):
+    """
+    Writes twitter files to a txt file
+    :param train_dir:
+    :param export_file:
+    :return:
+    """
+    with open(export_file, "w") as f:
+        for hashtag in os.listdir(train_dir):
+            input_filename = os.path.join(train_dir, hashtag)
+            tweets = hybrid_vector_generator.load_input_file(
+                input_filename)  # (tweet_id, tweet_text,
+            # tweet_level)
+
+            filter = {"``", "`", "..", ',', ".", "!", "?", ";", "&", "(", ")", "'", "''",
+                      "#", ' \ '":", "...", "-", "+"}
+
+            for tweet_id, tweet_text, tweet_level in tweets:
+                tweet = tweet_text.lower()
+                for word in tweet.split():
+                    if word.startswith('@') or word.startswith(
+                            '.@') or word.startswith('http'):
+                        tweet = tweet.replace(' ' + word, "")  # if it is on the end
+                        tweet = tweet.replace(word + ' ', "")  # if it is on the begining
+
+                tweet = " ".join([x for x in nltk.word_tokenize(tweet) if x not in filter])
+                f.write(tweet + "\n")
+
+
+if __name__ == "__main__":
+    train_dir = "/home/bartol/Documents/Work/apt_project/dataset/train_data"
+    export = "fasttext.txt"
+    export_twitter_for_fastText(train_dir=train_dir, export_file=export)

@@ -46,15 +46,25 @@ def generate(input_dir, output_dir, model, config):
                 word_data.append(word_merged)
                 char_data.append(word_merged)
                 index += 1
-
-        network_result = get_classification(model,
+        
+        network_results = get_classification(model,
                                             word_merged,
                                             char_merged)
 
-        if network_result == 1:
-            increase_counter(results, tweetID1)
-        else:
-            increase_counter(results, tweetID2)
+        index = 1
+        pred_index = 0
+        for tweetID1, tweet_text1 in tweets:
+            for tweetID2, tweet_text2 in tweets[index:]:
+                if tweetID1 == tweetID2:
+                    continue
+                network_result = network_results[pred_index]
+                if network_result == 1:
+                    increase_counter(results, tweetID1)
+                else:
+                    increase_counter(results, tweetID2)
+                pred_index += 1
+
+            index += 1
 
         write_output_file(output_filename, results)
 
@@ -74,9 +84,7 @@ def get_feature_vector(embed_dict, tweet_text, config):
                                                    max_word_size=config['char_max_word']))
 
 
-def get_classification(model, word_merged, char_merged):
-    import pdb
-    pdb.set_trace()
+def get_classification(model, word_merged, char_merged):    
     return model.predict(word_merged, char_merged)
 
 

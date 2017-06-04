@@ -104,7 +104,8 @@ assigned integer values. All sentence characters are then represented using thei
 mapped integer values but the padding is also applied on the word level as shown
 in Figure \ref{fig:cnn_embed}. Encoded sentence represents an input which is fed
 into a trainable character embedding layer of $C_e \times V$ dimensions, where
-$C_e$ is the character embedding size, and $V$ is the number of unique characters in the dataset.
+$C_e$ is the character embedding size, and $V$ is the number of unique
+characters in the corpus.
 
 \begin{figure}
   \caption{Word embeddings and the CNN architecture}
@@ -142,15 +143,15 @@ from tweets of viewers who watched TV show @midnight. As part of this "game-show
 viewers were asked to write a humorous message about a topic that was announced
 in the show. The day of the ensuing episode, @midnight would create a post that
 announced the top-10 tweets from the previous episode. The whole dataset consists
-of 11,685 tweets about 106 different topics. Every tweet in the dataset is
-labeled in one of the three labels. Label 2 indicates winning tweet, label 1
-indicates that tweet was selected as top-10 and label 0 intended for all other
-tweets. A number of tweets per topic vary among different topics, but 71\% of
-topics contain at least 90 tweets. Topics with the lowest number of tweets have 
-20 tweets, and topics with the highest number of tweets have 180 tweets. It is 
-also important to note that for some topics like "FastFoodBooks" external
-knowledge is required to understand the humor, while for other like
-"IfIWerePresident" it isn't.
+of $11,685$ tweets about 106 different topics. Every tweet in the dataset is
+labeled with one of the three labels. Label $2$ indicates the winning tweet, label 1
+a top 10 tweet, and label 0 is intended for all other
+tweets. A number of tweets per topic varies among different topics, but $71\%$ of
+topics contain at least $90$ tweets. Topics with the lowest number of tweets have 
+around 20 tweets, and topics with the highest number of tweets have around 180 tweets.
+It is also important to note that for some topics like \emph{FastFoodBooks} external
+knowledge is required to understand the joke, while for others like
+\emph{IfIWerePresident} it isn't.
 
 \section{Experiments}
 We divide this section into two parts: the former one reporting results on the
@@ -278,101 +279,34 @@ second which is still competitive because the best team in Task A doesn't even
 have top results in Task B, meaning our model can perform well on both tasks.
 
 
-
-% \subsection{Figures}
-
-% Here is an example on how to include figures in the paper. Figures are included in \LaTeX{} code immediately \textit{after} the text in which these figures are referenced. Allow \LaTeX{} to place the figure where it believes is best (usually on top of the page of at the position where you would not place the figure). Figures are referenced as follows: ``Figure~\ref{fig:figure1} shows \dots''. Use tilde (\verb.~.) to prevent separation between the word ``Figure'' and its enumeration. 
-
-% \subsection{Tables}
-
-% There are two types of tables: narrow tables that fit into one column and a wide table that spreads over both columns.
-
-% \subsubsection{Narrow tables}
-
-% Table~\ref{tab:narrow-table} is an example of a narrow table. Do not use vertical lines in tables -- vertical tables have no effect and they make tables visually less attractive.
-
-% \begin{table}
-% \caption{This is the caption of the table. Table captions should be placed \textit{above} the table.}
-% \label{tab:narrow-table}
-% \begin{center}
-% \begin{tabular}{ll}
-% \toprule
-% Heading1 & Heading2 \\
-% \midrule
-% One & First row text \\
-% Two   & Second row text \\
-% Three   & Third row text \\
-%       & Fourth row text \\
-% \bottomrule
-% \end{tabular}
-% \end{center}
-% \end{table}
-
-% \subsection{Wide tables}
-
-% Table~\ref{tab:wide-table} is an example of a wide table that spreads across both columns. The same can be done for wide figures that should spread across the whole width of the page. 
-
-% \begin{table*}
-% \caption{Wide-table caption}
-% \label{tab:wide-table}
-% \begin{center}
-% \begin{tabular}{llr}
-% \toprule
-% Heading1 & Heading2 & Heading3\\
-% \midrule
-% A & A very long text, longer that the width of a single column & $128$\\
-% B & A very long text, longer that the width of a single column & $3123$\\
-% C & A very long text, longer that the width of a single column & $-32$\\
-% \bottomrule
-% \end{tabular}
-% \end{center}
-% \end{table*}
-
-% Math expressions and formulas that appear within the sentence should be written inside the so-called \emph{inline} math environment: $2+3$, $\sqrt{16}$, $h(x)=\mathbf{1}(\theta_1 x_1 + \theta_0>0)$. Larger expressions and formulas (e.g., equations) should be written in the so-called \emph{displayed} math environment:
-
-% \[
-% b^{(i)}_k = \begin{cases}
-% 1 & \text{if 
-%     $k = \text{argmin}_j \| \mathbf{x}^{(i)} - \mathbf{\mu}_j \|$}\\
-% 0 & \text{otherwise}
-% \end{cases}
-% \]
-
-% Math expressions which you reference in the text should be written inside the \textit{equation} environment:
-
-% \begin{equation}\label{eq:kmeans-error}
-% J = \sum_{i=1}^N \sum_{k=1}^K 
-% b^{(i)}_k \| \mathbf{x}^{(i)} - \mathbf{\mu}_k \|^2
-% \end{equation}
-
-% Now you can reference equation \eqref{eq:kmeans-error}. If the paragraph continues right after the formula
-
-% \begin{equation}
-% f(x) = x^2 + \varepsilon
-% \end{equation}
-
-% \noindent like this one does, use the command \emph{noindent} after the equation to remove the indentation of the row. 
-
-% Multi-letter words in the math environment should be written inside the command \emph{mathit}, otherwise \LaTeX{} will insert spacing between the letters to denote the multiplication of values denoted by symbols. For example, compare
-% $\mathit{Consistent}(h,\mathcal{D})$ and\\
-% $Consistent(h,\mathcal{D})$.
-
-% If you need a math symbol, but you don't know the corresponding \LaTeX{} command that generates it, try
-% \emph{Detexify}.\footnote{\texttt{http://detexify.kirelabs.org/}}
-
 \section{Conclusion}
+We proposed three different models for solving comparative humor ranking tasks
+of pairwise comparison and direct ranking classification. All three
+models use deep learning architecture by combining approaches of recurrent and
+convolutional neural networks.
 
-We proposed three different models for solving comparative humor ranking task: pairwise comparison task and direct ranking classification task. All three models use deep learning architecture combining approaches of recurrent and convolutional neural networks.
+For pairwise comparison task best results were achieved using the Bi-LSTM model
+result in $69.1\%$ accuracy score on unseen evaluation data, and for
+direct ranking classification task best results were achieved using same
+Bi-LSTM model and were $0.881$ on unseen evaluation data. Model
+evaluation on final unseen data is done using official evaluation scripts given
+in SemEval-2017 Task 6.
 
-For pairwise comparison task best results were achieved using MODELMODELNAME and were XX\% on development set and YY\% on unseen evaluation data, and for direct ranking classification task best results were achieved using MODELMODELNAME and were XX\% on development set and YY\% on unseen evaluation data. Model evaluation on final unseen data is done using official evaluation scripts given in SemEval-2017 Task 6.
+We have compared our results with the results of other task participants resulting
+in our model taking the first place on the Task A, and ranking second on the Task B.
+The main distinction between our model and competitive models is in the lack of
+hand engineered features which indicates that automatic feature extraction using
+deep learning framework has a great prospect in this task and requires further work.
 
-We have compared our results with the results of other task participants resulting in our model ranking  X. out of Y on the Task A, and Z out of K on the Task B.  The main distinction between our model and competitive models is in the lack of hand engineered features which indicates that automatic feature extraction using deep learning framework has a great prospect in this task and requires further work.
-
-For the next step we would experiment with specially adapted word embeddings trained only on the humor containing corpus. We believe it is crucial for word vectors to learn semantic meaning from the domain specific data because of the complex humor structure.  TODO: One short sentence about number of parameters and overfitting.
+For the next step we would experiment with specially adapted word embeddings
+trained only on the humor containing corpus. We believe it is crucial for word
+vectors to learn semantic meaning from the domain specific data because of the
+complex humor structure. 
 
 \section*{Acknowledgements}
 
-Thanks to TakeLab\footnote{\texttt{http://takelab.fer.hr/}} for providing us with the adequate computing resources.
+We thank TakeLab\footnote{\texttt{http://takelab.fer.hr/}} team for providing
+us with the adequate computing resources.
 
 \bibliographystyle{tar2016}
 \bibliography{tar2016} 

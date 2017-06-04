@@ -80,17 +80,16 @@ class Net:
 
             for b in range(num_batches):
                 word_1 = self.train_word[
-                         b * self.batch_size:(b + 1) * self.batch_size][:,0]
+                         b * self.batch_size:(b + 1) * self.batch_size][:, 0]
                 char_1 = self.train_char[
-                         b * self.batch_size:(b + 1) * self.batch_size][:,0]
+                         b * self.batch_size:(b + 1) * self.batch_size][:, 0]
 
                 word_2 = self.train_word[
-                         b * self.batch_size:(b + 1) * self.batch_size][:,1]
+                         b * self.batch_size:(b + 1) * self.batch_size][:, 1]
                 char_2 = self.train_char[
-                         b * self.batch_size:(b + 1) * self.batch_size][:,1]
+                         b * self.batch_size:(b + 1) * self.batch_size][:, 1]
                 label = self.train_label[
                         b * self.batch_size:(b + 1) * self.batch_size]
-
 
                 loss, _, lr = self.sess.run(
                     [self.loss, self.train_op, self.lr],
@@ -148,16 +147,15 @@ class Net:
 
         for b in range(num_batches):
             word_1 = input[
-                     b * self.batch_size:(b + 1) * self.batch_size][:,0]
+                     b * self.batch_size:(b + 1) * self.batch_size][:, 0]
             char_1 = input_chr[
-                     b * self.batch_size:(b + 1) * self.batch_size][:,0]
+                     b * self.batch_size:(b + 1) * self.batch_size][:, 0]
             word_2 = input[
-                     b * self.batch_size:(b + 1) * self.batch_size][:,1]
+                     b * self.batch_size:(b + 1) * self.batch_size][:, 1]
             char_2 = input_chr[
-                     b * self.batch_size:(b + 1) * self.batch_size][:,1]
+                     b * self.batch_size:(b + 1) * self.batch_size][:, 1]
             label = labels[
                     b * self.batch_size:(b + 1) * self.batch_size]
-
 
             loss, pred = self.sess.run(
                 [self.loss, self.softmax],
@@ -242,6 +240,43 @@ class BILSTM_FC(Net):
         super().__init__(config)
         self.setup()
 
+    def middle_layer(self, word_input, reuse=False):
+        net = [tf.reshape(x, [-1, self.word_embd_vec]) for x in
+               tf.split(word_input, self.timestep,
+                        axis=2)]
+
+        weights_output_dim = 256
+        logging.info("LSTM output dimension {}".format(weights_output_dim))
+
+        # Hidden layer weights => 2*n_hidden because of forward +
+        # backward cells
+
+        with tf.variable_scope("w1", reuse=reuse):
+            out_weight = tf.get_variable("weight_out", [2 * self.lstm_hidden,
+                                                        weights_output_dim],
+                                         initializer=tf.contrib.layers.xavier_initializer())
+
+        with tf.variable_scope("b1", reuse=reuse):
+            out_bias = tf.get_variable("bias_out", [weights_output_dim],
+                                       initializer=tf.constant_initializer(0.0))
+
+        # Forward and backward direction cell
+        with tf.variable_scope("forward", reuse=reuse):
+            lstm_fw_cell = rnn.BasicLSTMCell(self.lstm_hidden, forget_bias=1.0)
+        with tf.variable_scope("backward", reuse=reuse):
+            lstm_bw_cell = rnn.BasicLSTMCell(self.lstm_hidden, forget_bias=1.0)
+
+        with tf.variable_scope("birnn", reuse=reuse):
+            net, _, _ = rnn.static_bidirectional_rnn(cell_fw=lstm_fw_cell,
+                                                     cell_bw=lstm_bw_cell,
+                                                     inputs=net,
+                                                     dtype=tf.float32)
+
+            # Linear activation, using rnn inner loop on the final output
+            return slim.flatten(slim.dropout(tf.nn.relu(
+                tf.matmul(net[-1], out_weight) + out_bias),
+                keep_prob=self.dropout))
+
     def setup(self):
         self.sess = tf.Session()
         self.global_step = tf.Variable(0, trainable=False)
@@ -249,66 +284,36 @@ class BILSTM_FC(Net):
         """
         Word embeddings input of size (batch_size, timestep, word_embed_dim)
         """
-        self.word_embedding_input = tf.placeholder(tf.float32,
-                                                   (None, self.word_embd_vec,
-                                                    self.timestep),
-                                                   name="input")
+        self.word_embedding_input_1 = tf.placeholder(tf.float32,
+                                                     (None, self.word_embd_vec,
+                                                      self.timestep),
+                                                     name="input_word_1")
 
-        self.chr_embedding_input = tf.placeholder(tf.int32,
-                                                  (None,
-                                                   self.char_max_word * self.timestep),
-                                                  name="input_char")
-        self.tag_embedding = tf.placeholder(tf.float32,
-                                            (None, self.word_embd_vec),
-                                            name="labels")
-        # POS tags encoded in one-hot fashion (batch_size, num_classes)
+        self.chr_embedding_input_1 = tf.placeholder(tf.int32,
+                                                    (None,
+                                                     self.char_max_word * self.timestep),
+                                                    name="input_char_1")
+        self.word_embedding_input_2 = tf.placeholder(tf.float32,
+                                                     (None, self.word_embd_vec,
+                                                      self.timestep),
+                                                     name="input_word_2")
+
+        self.chr_embedding_input_2 = tf.placeholder(tf.int32,
+                                                    (None,
+                                                     self.char_max_word * self.timestep),
+                                                    name="input_char_2")
         self.labels = tf.placeholder(tf.int32, (None, self.n_classes))
 
-        # BI-BILSTM
-        # Define weights for the Bi-directional BILSTM
-        self.output_dim = 64
-        weights = {
-            # Hidden layer weights => 2*n_hidden because of forward +
-            # backward cells
-            'out': tf.Variable(
-                tf.random_uniform([2 * self.lstm_hidden, self.output_dim],
-                                  minval=-np.sqrt(6 / (
-                                      2 * self.lstm_hidden + self.n_classes)),
-                                  maxval=np.sqrt(6 / (
-                                      2 * self.lstm_hidden + self.n_classes)))
-            )
-        }
-        biases = {
-            'out': tf.Variable(tf.zeros([self.output_dim]))
-        }
+        tweet_1_features = self.middle_layer(self.word_embedding_input_1)
+        tweet_2_features = self.middle_layer(self.word_embedding_input_2, reuse=True)
 
-        net = tf.reshape(self.word_embedding_input,
-                         [-1, self.timestep * self.word_embd_vec],
-                         name="reshape1")
-        net = tf.split(net, self.timestep, axis=1, name="split1")
+        # Concat features and create a FC layer
+        net = tf.concat([tweet_1_features, tweet_2_features], 1)
 
-        # Forward and backward direction cell
-        lstm_fw_cell = rnn.BasicLSTMCell(self.lstm_hidden, forget_bias=1.0)
-        lstm_bw_cell = rnn.BasicLSTMCell(self.lstm_hidden, forget_bias=1.0)
-
-        net, _, _ = rnn.static_bidirectional_rnn(cell_fw=lstm_fw_cell,
-                                                 cell_bw=lstm_bw_cell,
-                                                 inputs=net,
-                                                 dtype=tf.float32)
-
-        # Linear activation, using rnn inner loop on the final output
-        net = tf.matmul(net[-1], weights['out']) + biases['out']
-
-        # Concat Tag embedding with LSTM output
-
-        # FC Layers
-        net = tf.layers.dropout(net, rate=self.dropout)
-        net = tf.layers.dense(inputs=net,
-                              kernel_initializer=tf.contrib.layers.xavier_initializer(),
-                              activation=tf.nn.relu,
-                              units=64)
-
-        net = tf.layers.dropout(net, rate=self.dropout)
+        net = slim.fully_connected(net, 256,
+                                   activation_fn=tf.nn.relu,
+                                   scope='fc2')
+        net = slim.dropout(net, keep_prob=self.dropout)
 
         # Logits and softmax
         logits = tf.layers.dense(inputs=net,
@@ -343,46 +348,32 @@ class CNN_FC(Net):
         super().__init__(config)
         self.setup()
 
-    def setup(self):
-        self.sess = tf.Session()
-        self.global_step = tf.Variable(0, trainable=False)
-
-        # Define inputs
-        """
-        Char embeddings input of size (batch_size, timestep, word_embed_dim)
-        """
-
-        self.word_embedding_input = tf.placeholder(tf.float32,
-                                                   (None, self.word_embd_vec,
-                                                    self.timestep),
-                                                   name="input_word")
-
-        self.chr_embedding_input = tf.placeholder(tf.int32,
-                                                  (None,
-                                                   self.char_max_word * self.timestep),
-                                                  name="input_char")
-        self.labels = tf.placeholder(tf.int32, (None, self.n_classes))
-
+    def middle_layer(self, char_input, reuse=False):
         # Char embedding layer
-        char_embed = tf.Variable(
-            tf.random_uniform(
-                [self.char_vocab_size, self.char_embedding_dim],
-                minval=-np.sqrt(3 / self.char_embedding_dim),
-                maxval=np.sqrt(3 / self.char_embedding_dim)),
-            name="char_embedding")
 
-        net = tf.nn.embedding_lookup(char_embed, self.chr_embedding_input)
-        net = slim.dropout(net, keep_prob=self.dropout, scope="dropout1")
-        net = tf.expand_dims(net, axis=3)
+        with tf.variable_scope("embd1", reuse=reuse):
+            char_embed = tf.Variable(
+                tf.random_uniform(
+                    [self.char_vocab_size, self.char_embedding_dim],
+                    minval=-np.sqrt(3 / self.char_embedding_dim),
+                    maxval=np.sqrt(3 / self.char_embedding_dim)),
+                name="char_embedding")
+
+            net = tf.nn.embedding_lookup(char_embed, char_input)
+            net = slim.dropout(net, keep_prob=self.dropout)
+            net = tf.expand_dims(net, axis=3)
 
         # Network layers
-        with slim.arg_scope([slim.conv2d, slim.fully_connected],
-                            activation_fn=tf.nn.relu,
-                            weights_initializer=tf.contrib.layers.xavier_initializer()):
-            N_FILTERS = self.timestep * 1
+
+        with tf.variable_scope("conv1", reuse=reuse):
+            N_FILTERS = self.timestep * 2  # Must be a timestep multiplier
             FILTER_SHAPE1 = [3, self.char_embedding_dim]
             POOLING_WINDOW = 4
             POOLING_STRIDE = 2
+
+            logging.info(str("Number of CNN filters {}".format(N_FILTERS)))
+            logging.info(str("Pooling window {}".format(POOLING_WINDOW)))
+            logging.info(str("Pooling stride {}".format(POOLING_STRIDE)))
 
             conv1 = tf.contrib.layers.convolution2d(
                 net, N_FILTERS, FILTER_SHAPE1, padding='VALID')
@@ -395,13 +386,52 @@ class CNN_FC(Net):
                 strides=[1, POOLING_STRIDE, 1, 1],
                 padding='SAME')
 
-            # FC layers
-            net = slim.flatten(net, scope="flatten3")
-            net = slim.fully_connected(net, 64, scope='fc3')
-            net = slim.dropout(net, keep_prob=self.dropout, scope="dropout4")
-            logits = slim.fully_connected(net, self.n_classes,
-                                          activation_fn=None,
-                                          scope='logits')
+            net = slim.dropout(net, keep_prob=self.dropout)
+            return slim.flatten(net)
+
+    def setup(self):
+        self.sess = tf.Session()
+        self.global_step = tf.Variable(0, trainable=False)
+
+        # Define inputs
+        """
+        Char embeddings input of size (batch_size, timestep, word_embed_dim)
+        """
+
+        self.word_embedding_input_1 = tf.placeholder(tf.float32,
+                                                     (None, self.word_embd_vec,
+                                                      self.timestep),
+                                                     name="input_word_1")
+
+        self.chr_embedding_input_1 = tf.placeholder(tf.int32,
+                                                    (None,
+                                                     self.char_max_word * self.timestep),
+                                                    name="input_char_1")
+        self.word_embedding_input_2 = tf.placeholder(tf.float32,
+                                                     (None, self.word_embd_vec,
+                                                      self.timestep),
+                                                     name="input_word_2")
+
+        self.chr_embedding_input_2 = tf.placeholder(tf.int32,
+                                                    (None,
+                                                     self.char_max_word * self.timestep),
+                                                    name="input_char_2")
+        self.labels = tf.placeholder(tf.int32, (None, self.n_classes))
+
+        tweet_1_features = self.middle_layer(self.chr_embedding_input_1)
+        tweet_2_features = self.middle_layer(self.chr_embedding_input_2, reuse=True)
+
+        # Concat features and create a FC layer
+        net = tf.concat([tweet_1_features, tweet_2_features], 1)
+
+        net = slim.fully_connected(net, 256,
+                                   activation_fn=tf.nn.relu,
+                                   scope='fc2')
+        net = slim.dropout(net, keep_prob=self.dropout)
+
+        logits = slim.fully_connected(net, self.n_classes,
+                                      activation_fn=None,
+                                      scope='logits')
 
         # Probabilities
         self.softmax = tf.nn.softmax(logits, name="softmax")

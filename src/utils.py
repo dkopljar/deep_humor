@@ -170,7 +170,7 @@ def extract_data(line):
     :return:
     """
     data = line.rstrip().split(" ")[-1]
-    return float(data[:-1]) / 100  # remove percentange
+    return float(data[:-1])  # remove percentange
 
 
 def read_log_file(file):

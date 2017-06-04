@@ -137,37 +137,14 @@ using the Bi-LSTM module as well as the inter character features with the CNN
 layer.
 
 \section{Dataset}
-In this paper, we trained and evaluated models on the dataset that was created
-from tweets of viewers who watched TV show @midnight. As part of this "game-show"
-viewers were asked to write a humorous message about a topic that was announced
-in the show. The day of the ensuing episode, @midnight would create a post that
-announced the top-10 tweets from the previous episode. The whole dataset consists
-of 11,685 tweets about 106 different topics. Every tweet in the dataset is
-labeled in one of the three labels. Label 2 indicates winning tweet, label 1
-indicates that tweet was selected as top-10 and label 0 intended for all other
-tweets. A number of tweets per topic vary among different topics, but 71\% of
-topics contain at least 90 tweets. Topics with the lowest number of tweets have 
-20 tweets, and topics with the highest number of tweets have 180 tweets. It is 
-also important to note that for some topics like "FastFoodBooks" external
-knowledge is required to understand the humor, while for other like
-"IfIWerePresident" it isn't.
+
+In this paper, we trained and evaluated models on the dataset that was created from tweets of viewers who watched TV show @midnight. As part of this "game-show" viewers were asked to write a humorous message about a topic that was announced in the show. The day of the ensuing episode, @midnight would create a post that announced the top-10 tweets from the previous episode. The whole dataset consists of 11,685 tweets about 106 different topics. Every tweet in the dataset is labeled in one of the three labels. Label 2 indicates winning tweet, label 1 indicates that tweet was selected as top-10 and label 0 intended for all other tweets. A number of tweets per topic vary among different topics, but 71\% of topics contain at least 90 tweets. Topics with the lowest number of tweets have 20 tweets, and topics with the highest number of tweets have 180 tweets. It is also important to note that for some topics like "FastFoodBooks" external knowledge is required to understand the humor, while for other like "IfIWerePresident" it isn't.
 
 \section{Experiments}
-We divide this section into two parts: the former one reporting results on the
-non-evaluation data, and the latter results on the official evaluation data.
+We divide this section into two parts: the former one reporting results on the non-evaluation data, and the latter results on the official evaluation data.
 
 \subsection{Non-evaluation data results}
-During the model training and evaluation we used a k-fold cross-validation technique
-($k=35$) to properly optimize our models hyper-parameters. Grid search
-method was not feasible in our case due to large parameters
-search space and slow training time. Our method was to change each parameter
-value from the low to high extremes and see how it affects the model
-performance, in the end interpolating to find near optimal parameters.
-In addition to using dropout for regularization, we also employed the
-early-stopping\cite{early_stopping} method to achieve the best possible validation
-performance. Table \ref{tab:hyperparams} shows the final hyper-parameters used
-in training and validation. For the optimization algorithm we used
-Adam\cite{Adam}.
+During the model training and evaluation we used a k-fold cross-validation technique ($k=35$) to properly optimize our models hyper-parameters. Grid search method was not feasible in our case due to large parameters search space and slow training time. Our method was to change each parameter value from the low to high extremes and see how it affects the model performance, in the end interpolating to find near optimal parameters. In addition to using dropout for regularization, we also employed the early-stopping\cite{early_stopping} method to achieve the best possible validation performance. Table \ref{tab:hyperparams} shows the final hyper-parameters used in training and validation. For the optimization algorithm we used Adam \citep{adam2014}.
 
 \begin{table}
 \small

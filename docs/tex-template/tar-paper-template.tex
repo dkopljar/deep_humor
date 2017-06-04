@@ -104,11 +104,11 @@ Adam\cite{Adam}.
  \toprule
      Hyperparameter & Value\\
  \midrule
-     Dropout rate & 0.3\\
+     Dropout rate & 0.5\\
      BLSTM hidden state & 128\\
      Timestep & 30\\
-     Learning rate & 0.001\\
-     CNN filter size & 120 \\
+     Learning rate & 0.0002\\
+     CNN filter size & 60 \\
      FC layer size & 256\\
      Character embedding layer size & 50\\
  \bottomrule
@@ -133,10 +133,15 @@ $95\%$ confidence intervals calculated from the $35$ validation runs.
  \toprule
      & Baseline & BLSTM & CNN & CNN + BLSTM\\
  \midrule
-     Accuracy & 12 $\pm$ 0.0124 & 12 $\pm$ 0.0124 & 12 $\pm$ 0.0124  & 12 $\pm$ 0.0124 \\
-     Precision & 12 $\pm$ 0.0124 & & &\\
-     Recall & 12 $\pm$ 0.0124 & & &\\
-     F1 & 12 $\pm$ 0.0124 & & &\\
+     Accuracy & 50.1 $\pm$ 0.2 & \textbf{67.8 $\pm$ 1.7} & 52.9 $\pm$ 1.4  & 67.0 $\pm$
+     1.7\\
+
+     Precision & 49.8 $\pm$ 0.3 & \textbf{68.2 $\pm$ 1.7}  & 54.1 $\pm$ 1.4& 67.4 $\pm$ 1.7\\
+
+     Recall & 50.3 $\pm$ 0.2 & \textbf{67.8 $\pm$ 1.7} & 52.9 $\pm$ 1.4& 67.0 $\pm$ 1.7\\
+
+     F1 & 50.0 $\pm$ 0.2 & \textbf{67.8 $\pm$ 1.7}  & 53.2 $\pm$ 1.4 & 67.0 $\pm$ 1.7\\
+
  \bottomrule
  \end{tabular}
  \end{center}
@@ -160,12 +165,12 @@ defined by the task organizers\cite{semeval_paper}.
  \toprule
      Team & Accuracy\\
  \midrule
-     Team 1 & 23 \\
-     Team 2 & 23\\
-     \textbf{Our model} & 100 \\
-     Team 3 & 100\\
-     Team 5 & 100\\
-     Team 6 & 100\\
+     HumorHawk & 67.5 \\
+     \textbf{CNN + Bi-LSTM} & 66.7 \\
+     TakeLab & 64.1\\
+     HumorHawk & 63.7\\
+     DataStories & 63.2\\
+     Duluth & 62.7\\
  \bottomrule
  \end{tabular}
  \end{center}
@@ -179,12 +184,12 @@ defined by the task organizers\cite{semeval_paper}.
  \toprule
      Team & Distance\\
  \midrule
-     Team 1 & 23 \\
-     Team 2 & 23\\
+     Duluth & 0.872 \\
+     TakLab & 0.908\\
      \textbf{Our model} & 0.9 \\
-     Team 3 & 100\\
-     Team 5 & 100\\
-     Team 6 & 100\\
+     QUB & 0.924\\
+     QUB & 0.924\\
+     SVNIT@SemEval & 0.938\\
  \bottomrule
  \end{tabular}
  \end{center}
@@ -286,7 +291,7 @@ For the next step we would experiment with specially adapted word embeddings tra
 
 \section*{Acknowledgements}
 
-Hvala svima u studiju i režiji.
+Thanks to TakeLab\footnote{\texttt{http://takelab.fer.hr/}} for providing us with the adequate computing resources.
 
 \bibliographystyle{tar2016}
 \bibliography{tar2016} 

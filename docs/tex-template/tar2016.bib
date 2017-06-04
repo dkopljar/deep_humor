@@ -268,3 +268,73 @@ month={Nov}
   pages={402--408},
   year={2000}
 }
+
+@InProceedings{datastories2017,
+  author    = {Baziotis, Christos  and  Pelekis, Nikos  and  Doulkeridis, Christos},
+  title     = {DataStories at SemEval-2017 Task 6: Siamese LSTM with Attention for Humorous Text Comparison},
+  booktitle = {Proceedings of the 11th International Workshop on Semantic Evaluation (SemEval-2017)},
+  month     = {August},
+  year      = {2017},
+  address   = {Vancouver, Canada},
+  publisher = {Association for Computational Linguistics},
+  pages     = {381--386},
+  abstract  = {In this paper we present a deep-learning system that competed at SemEval-2017
+	Task 6 “\#HashtagWars: Learning a Sense of Humor”. We participated in
+	Subtask A, in which the goal was, given two Twitter messages, to identify which
+	one is funnier. We propose a Siamese architecture with bidirectional Long
+	Short-Term Memory (LSTM) networks, augmented with an attention mechanism. Our
+	system works on the token-level, leveraging word embeddings trained on a big
+	collection of unlabeled Twitter messages. We ranked 2nd in 7 teams. A
+	post-completion improvement of our model, achieves state-of-the-art results on
+	\#HashtagWars dataset.},
+  url       = {http://www.aclweb.org/anthology/S17-2065}
+}
+
+@InProceedings{takelab2017,
+  author    = {Kukova\v{c}ec, Marin  and  Malenica, Juraj  and  Mr\v{s}i\'{c}, Ivan  and  \v{S}ajatovi\'{c}, Antonio  and  Alagi\'{c}, Domagoj  and  \v{S}najder, Jan},
+  title     = {TakeLab at SemEval-2017 Task 6: \#RankingHumorIn4Pages},
+  booktitle = {Proceedings of the 11th International Workshop on Semantic Evaluation (SemEval-2017)},
+  month     = {August},
+  year      = {2017},
+  address   = {Vancouver, Canada},
+  publisher = {Association for Computational Linguistics},
+  pages     = {387--391},
+  abstract  = {This paper describes our system for humor ranking in tweets within the SemEval
+	2017 Task 6: \\#HashtagWars (6A and 6B). For both subtasks, we use an
+	off-the-shelf gradient boosting model built on a rich set of features,
+	handcrafted to provide the model with the external knowledge needed to better
+	predict the humor in the text. The features capture various cultural references
+	and specific humor patterns. Our system ranked 2nd (officially 7th) among 10
+	submissions on the Subtask A and 2nd among 9 submissions on the Subtask B.},
+  url       = {http://www.aclweb.org/anthology/S17-2066}
+}
+
+@InProceedings{humorhawk2017,
+  author    = {Donahue, David  and  Romanov, Alexey  and  Rumshisky, Anna},
+  title     = {HumorHawk at SemEval-2017 Task 6: Mixing Meaning and Sound for Humor Recognition},
+  booktitle = {Proceedings of the 11th International Workshop on Semantic Evaluation (SemEval-2017)},
+  month     = {August},
+  year      = {2017},
+  address   = {Vancouver, Canada},
+  publisher = {Association for Computational Linguistics},
+  pages     = {89--93},
+  abstract  = {This paper describes the winning system for SemEval-2017 Task 6: \#HashtagWars:
+	Learning a Sense of Humor. Humor detection has up until now been predominantly
+	addressed using feature-based approaches. Our system utilizes recurrent deep
+	learning methods with dense embeddings to predict humorous tweets from the
+	@midnight show \#HashtagWars. In order to include both meaning and sound in the
+	analysis, GloVe embeddings are combined with a novel phonetic representation to
+	serve as input to an LSTM component. The output is combined with a
+	character-based CNN model, and an XGBoost component in an ensemble model which
+	achieves 0.675 accuracy on the evaluation data.},
+  url       = {http://www.aclweb.org/anthology/S17-2010}
+}
+
+@article{XGBoost2016,
+  author    = {Tianqi Chen and
+               Carlos Guestrin},
+  title     = {XGBoost: {A} Scalable Tree Boosting System},
+  journal   = {CoRR},
+  volume    = {abs/1603.02754},
+  year      = {2016}
+}

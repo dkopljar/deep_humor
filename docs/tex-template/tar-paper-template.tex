@@ -62,6 +62,12 @@ of humor into two groups: humor and non-humor, basically a binary classification
 This representation ignores the continuous nature of humor, while also not accounting
 for the subjectivity in perceiving humor \citep{potash2016hashtagwars}.
 
+SemEval-2017 Task 6 has finished in February, 2017 and most of the top-ranked participants \citep{humorhawk2017,takelab2017,datastories2017} published their work describing used techniques and models.
+
+Donahue et al. with \emph{HumorHawk} team have won the contest on Task A (no data available for Task B). Their system utilizes recurrent deep learning methods with dense embeddings. They used \emph{GloVe} embeddings in combination with a novel phonetic representation which is used as input to LSTM. After LSTM, they have stacked character-based CNN model, and an XGBoost \citep{XGBoost2016} component in an ensemble model which achieves 0.675 accuracy on the evaluation data for the Task A.
+
+Kukova\v{c}ec et al. with \emph{TakeLab} team have participated on both tasks, A and B, and won the second place on both of them. Unlike the other two teams \citep{humorhawk2017,datastories2017}, which used deep-learning models with automatic feature extraction, they used a manually handcrafted rich set of features:  cultural reference features, binary and count-based features, readability-based features, humor-specific features and sentiment-based features. As a classifier they used gradient boosting model which achieves 0.641 accuracy on the evaluation data for the Task A, and distance of 0.908 on Task B evaluation data (lower is better, starting from 1).
+
 \section{Architecture}
 
 In this section, we describe the architecture of our system. Our most complex

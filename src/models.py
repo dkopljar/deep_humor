@@ -13,7 +13,7 @@ class Net:
     def __init__(self, config):
         self.learning_rate = config["lr"]
         self.optimizer = config["optimizer"]
-        self.timestep = config["timestep"] * 2
+        self.timestep = config["timestep"]
         self.word_embd_vec = config["word_vector_dim"]
         self.char_max_word = config['char_max_word']
         self.char_embedding_dim = config['char_embeddings_dim']
@@ -79,17 +79,25 @@ class Net:
                     self.train_label])
 
             for b in range(num_batches):
-                word = self.train_word[
-                       b * self.batch_size:(b + 1) * self.batch_size]
-                char = self.train_char[
-                       b * self.batch_size:(b + 1) * self.batch_size]
+                word_1 = self.train_word[
+                         b * self.batch_size:(b + 1) * self.batch_size][:,0]
+                char_1 = self.train_char[
+                         b * self.batch_size:(b + 1) * self.batch_size][:,0]
+
+                word_2 = self.train_word[
+                         b * self.batch_size:(b + 1) * self.batch_size][:,1]
+                char_2 = self.train_char[
+                         b * self.batch_size:(b + 1) * self.batch_size][:,1]
                 label = self.train_label[
                         b * self.batch_size:(b + 1) * self.batch_size]
 
+
                 loss, _, lr = self.sess.run(
                     [self.loss, self.train_op, self.lr],
-                    {self.word_embedding_input: word,
-                     self.chr_embedding_input: char,
+                    {self.word_embedding_input_1: word_1,
+                     self.chr_embedding_input_1: char_1,
+                     self.word_embedding_input_2: word_2,
+                     self.chr_embedding_input_2: char_2,
                      self.labels: label})
 
                 if (b + 1) % 15 == 0:
@@ -139,21 +147,29 @@ class Net:
         acc, prec, rec, f1, loss_sum = 0, 0, 0, 0, 0
 
         for b in range(num_batches):
-            word_b = input[
-                     b * self.batch_size:(b + 1) * self.batch_size]
-            char_b = input_chr[
-                     b * self.batch_size:(b + 1) * self.batch_size]
-            label_b = labels[
-                      b * self.batch_size:(b + 1) * self.batch_size]
+            word_1 = input[
+                     b * self.batch_size:(b + 1) * self.batch_size][:,0]
+            char_1 = input_chr[
+                     b * self.batch_size:(b + 1) * self.batch_size][:,0]
+            word_2 = input[
+                     b * self.batch_size:(b + 1) * self.batch_size][:,1]
+            char_2 = input_chr[
+                     b * self.batch_size:(b + 1) * self.batch_size][:,1]
+            label = labels[
+                    b * self.batch_size:(b + 1) * self.batch_size]
+
+
             loss, pred = self.sess.run(
                 [self.loss, self.softmax],
-                {self.word_embedding_input: word_b,
-                 self.chr_embedding_input: char_b,
-                 self.labels: label_b})
+                {self.word_embedding_input_1: word_1,
+                 self.chr_embedding_input_1: char_1,
+                 self.word_embedding_input_2: word_2,
+                 self.chr_embedding_input_2: char_2,
+                 self.labels: label})
 
             # Update metric
             a, p, r, f = utils.calc_metric(np.argmax(pred, axis=1),
-                                           np.argmax(label_b, axis=1))
+                                           np.argmax(label, axis=1))
             acc += a
             prec += p
             rec += r
@@ -246,7 +262,7 @@ class BILSTM_FC(Net):
                                             (None, self.word_embd_vec),
                                             name="labels")
         # POS tags encoded in one-hot fashion (batch_size, num_classes)
-        self.labels = tf.placeholder(tf.float32, (None, self.n_classes))
+        self.labels = tf.placeholder(tf.int32, (None, self.n_classes))
 
         # BI-BILSTM
         # Define weights for the Bi-directional BILSTM
@@ -410,46 +426,24 @@ class CNN_BILST_FC(Net):
     layer.
     """
 
-    def __init__(self, config):
-        super().__init__(config)
-        self.setup()
-
-    def setup(self):
-        self.sess = tf.Session()
-        self.global_step = tf.Variable(0, trainable=False)
-
-        # Define inputs
-        """
-        Char embeddings input of size (batch_size, timestep, word_embed_dim)
-        """
-
-        self.word_embedding_input = tf.placeholder(tf.float32,
-                                                   (None, self.word_embd_vec,
-                                                    self.timestep),
-                                                   name="input_word")
-
-        self.chr_embedding_input = tf.placeholder(tf.int32,
-                                                  (None,
-                                                   self.char_max_word * self.timestep),
-                                                  name="input_char")
-        self.labels = tf.placeholder(tf.int32, (None, self.n_classes))
-
+    def middle_layer(self, word_input, char_input, reuse=False):
         # Char embedding layer
-        char_embed = tf.Variable(
-            tf.random_uniform(
-                [self.char_vocab_size, self.char_embedding_dim],
-                minval=-np.sqrt(3 / self.char_embedding_dim),
-                maxval=np.sqrt(3 / self.char_embedding_dim)),
-            name="char_embedding")
 
-        net = tf.nn.embedding_lookup(char_embed, self.chr_embedding_input)
-        net = slim.dropout(net, keep_prob=self.dropout, scope="dropout1")
-        net = tf.expand_dims(net, axis=3)
+        with tf.variable_scope("embd1", reuse=reuse):
+            char_embed = tf.Variable(
+                tf.random_uniform(
+                    [self.char_vocab_size, self.char_embedding_dim],
+                    minval=-np.sqrt(3 / self.char_embedding_dim),
+                    maxval=np.sqrt(3 / self.char_embedding_dim)),
+                name="char_embedding")
+
+            net = tf.nn.embedding_lookup(char_embed, char_input)
+            net = slim.dropout(net, keep_prob=self.dropout)
+            net = tf.expand_dims(net, axis=3)
 
         # Network layers
-        with slim.arg_scope([slim.conv2d, slim.fully_connected],
-                            activation_fn=tf.nn.relu,
-                            weights_initializer=tf.contrib.layers.xavier_initializer()):
+
+        with tf.variable_scope("conv1", reuse=reuse):
             N_FILTERS = self.timestep * 2  # Must be a timestep multiplier
             FILTER_SHAPE1 = [3, self.char_embedding_dim]
             POOLING_WINDOW = 4
@@ -470,55 +464,97 @@ class CNN_BILST_FC(Net):
                 strides=[1, POOLING_STRIDE, 1, 1],
                 padding='SAME')
 
-        net = slim.dropout(net, keep_prob=self.dropout, scope="dropout2")
+            net = slim.dropout(net, keep_prob=self.dropout)
 
-        flatten_shape = int(np.prod([int(x) for x in net.shape[1:]]) / self.timestep)
-        cnn_feature = tf.reshape(net, [-1, flatten_shape, self.timestep],
-                                 name="reshape1")
+        with tf.variable_scope("concat1", reuse=reuse):
+            flatten_shape = int(np.prod([int(x) for x in net.shape[1:]]) / self.timestep)
+            cnn_feature = tf.reshape(net, [-1, flatten_shape, self.timestep],
+                                     name="reshape1")
 
-        # Concat char and word features
-        net = tf.concat([self.word_embedding_input, cnn_feature], axis=1, name="concat1")
+            # Concat char and word features
+            net = tf.concat([word_input, cnn_feature], axis=1, name="concat1")
 
-        net = [tf.reshape(x, [-1, self.word_embd_vec + flatten_shape]) for x in
-               tf.split(net, self.timestep,
-                        axis=2)]
+            net = [tf.reshape(x, [-1, self.word_embd_vec + flatten_shape]) for x in
+                   tf.split(net, self.timestep,
+                            axis=2)]
 
-        weights_output_dim = 64
+        weights_output_dim = 256
         logging.info("LSTM output dimension {}".format(weights_output_dim))
 
-        weights = {
-            # Hidden layer weights => 2*n_hidden because of forward +
-            # backward cells
-            'out': tf.Variable(
-                tf.random_uniform([2 * self.lstm_hidden, weights_output_dim],
-                                  minval=-np.sqrt(6 / (
-                                      2 * self.lstm_hidden + weights_output_dim)),
-                                  maxval=np.sqrt(6 / (
-                                      2 * self.lstm_hidden + weights_output_dim)))
-            )
-        }
-        biases = {
-            'out': tf.Variable(tf.zeros([weights_output_dim]))
-        }
+        # Hidden layer weights => 2*n_hidden because of forward +
+        # backward cells
+
+        with tf.variable_scope("w1", reuse=reuse):
+            out_weight = tf.get_variable("weight_out", [2 * self.lstm_hidden,
+                                                        weights_output_dim],
+                                         initializer=tf.contrib.layers.xavier_initializer())
+
+        with tf.variable_scope("b1", reuse=reuse):
+            out_bias = tf.get_variable("bias_out", [weights_output_dim],
+                                       initializer=tf.constant_initializer(0.0))
 
         # Forward and backward direction cell
-        lstm_fw_cell = rnn.BasicLSTMCell(self.lstm_hidden, forget_bias=1.0)
-        lstm_bw_cell = rnn.BasicLSTMCell(self.lstm_hidden, forget_bias=1.0)
+        with tf.variable_scope("forward", reuse=reuse):
+            lstm_fw_cell = rnn.BasicLSTMCell(self.lstm_hidden, forget_bias=1.0)
+        with tf.variable_scope("backward", reuse=reuse):
+            lstm_bw_cell = rnn.BasicLSTMCell(self.lstm_hidden, forget_bias=1.0)
 
-        net, _, _ = rnn.static_bidirectional_rnn(cell_fw=lstm_fw_cell,
-                                                 cell_bw=lstm_bw_cell,
-                                                 inputs=net,
-                                                 dtype=tf.float32)
+        with tf.variable_scope("birnn", reuse=reuse):
+            net, _, _ = rnn.static_bidirectional_rnn(cell_fw=lstm_fw_cell,
+                                                     cell_bw=lstm_bw_cell,
+                                                     inputs=net,
+                                                     dtype=tf.float32)
 
-        # Linear activation, using rnn inner loop on the final output
-        net = slim.flatten(slim.dropout(tf.nn.relu(
-            tf.matmul(net[-1], weights['out']) + biases['out']),
-            keep_prob=self.dropout))
+            # Linear activation, using rnn inner loop on the final output
+            return slim.flatten(slim.dropout(tf.nn.relu(
+                tf.matmul(net[-1], out_weight) + out_bias),
+                keep_prob=self.dropout))
 
-        # FC layers
-        net = slim.fully_connected(net, 64, scope='fc3', activation_fn=tf.nn.relu)
-        logging.info("FC network dimension {}".format(64))
-        net = slim.dropout(net, keep_prob=self.dropout, scope="dropout3")
+    def __init__(self, config):
+        super().__init__(config)
+        self.setup()
+
+    def setup(self):
+        self.sess = tf.Session()
+        self.global_step = tf.Variable(0, trainable=False)
+
+        # Define inputs
+        """
+        Char embeddings input of size (batch_size, timestep, word_embed_dim)
+        """
+
+        self.word_embedding_input_1 = tf.placeholder(tf.float32,
+                                                     (None, self.word_embd_vec,
+                                                      self.timestep),
+                                                     name="input_word_1")
+
+        self.chr_embedding_input_1 = tf.placeholder(tf.int32,
+                                                    (None,
+                                                     self.char_max_word * self.timestep),
+                                                    name="input_char_1")
+        self.word_embedding_input_2 = tf.placeholder(tf.float32,
+                                                     (None, self.word_embd_vec,
+                                                      self.timestep),
+                                                     name="input_word_2")
+
+        self.chr_embedding_input_2 = tf.placeholder(tf.int32,
+                                                    (None,
+                                                     self.char_max_word * self.timestep),
+                                                    name="input_char_2")
+        self.labels = tf.placeholder(tf.int32, (None, self.n_classes))
+
+        tweet_1_features = self.middle_layer(self.word_embedding_input_1,
+                                             self.chr_embedding_input_1)
+        tweet_2_features = self.middle_layer(self.word_embedding_input_2,
+                                             self.chr_embedding_input_2, reuse=True)
+
+        # Concat features and create a FC layer
+        net = tf.concat([tweet_1_features, tweet_2_features], 1)
+
+        net = slim.fully_connected(net, 256,
+                                   activation_fn=tf.nn.relu,
+                                   scope='fc2')
+        net = slim.dropout(net, keep_prob=self.dropout)
 
         logits = slim.fully_connected(net, self.n_classes,
                                       activation_fn=None,
@@ -535,6 +571,8 @@ class CNN_BILST_FC(Net):
                                              global_step=self.global_step,
                                              decay_steps=self.train_examples // self.batch_size,
                                              decay_rate=0.95)
+
         self.train_op = tf.train.AdamOptimizer(
             learning_rate=self.lr).minimize(self.loss,
-                                            global_step=self.global_step)
+                                            global_step=self.global_step,
+                                            name="Adam_optimizer")

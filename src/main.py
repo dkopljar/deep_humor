@@ -134,11 +134,10 @@ def main(config, final_eval=False):
             del train_data
             del dev_data
 
-            assert x_train_word.shape[2] == config['timestep'] * 2
+            assert x_train_word.shape[3] == config['timestep']
             assert y_train.shape[1] == config['n_classes']
-            assert x_train_chr.shape[1] == config['char_max_word'] * config['timestep'] * 2
-            assert x_train_chr.shape[0] == y_train.shape[0] == \
-                   x_train_word.shape[0]
+            assert x_train_chr.shape[2] == config['char_max_word'] * config['timestep']
+            assert x_train_chr.shape[0] == y_train.shape[0] == x_train_word.shape[0]
 
             # Mock data
             config['train_examples'] = x_train_word.shape[0]

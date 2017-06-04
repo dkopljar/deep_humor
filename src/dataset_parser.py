@@ -216,30 +216,22 @@ def create_pair_combs(lst):
             if int(element1[-1]) < int(element2[-1]):
                 # Second pair is funnier
                 if np.random.random() > 0.5:
-                    concatMatrix = np.concatenate((element1[0], element2[0]),
-                                                  axis=1)
-                    chr_merged = np.concatenate((element1[1], element2[1]),
-                                                axis=0)
+                    concatMatrix = np.array([element1[0], element2[0]], dtype=np.float32)
+                    chr_merged = np.array([element1[1], element2[1]], dtype=np.int32)
                     pairs_labels.append(0)
                 else:
-                    concatMatrix = np.concatenate((element2[0], element1[0]),
-                                                  axis=1)
-                    chr_merged = np.concatenate((element2[1], element1[1]),
-                                                axis=0)
+                    concatMatrix = np.array([element2[0], element1[0]], dtype=np.float32)
+                    chr_merged = np.array([element2[1], element1[1]], dtype=np.int32)
                     pairs_labels.append(1)
             else:
                 # First pair is funnier
                 if np.random.random() > 0.5:
-                    concatMatrix = np.concatenate((element2[0], element1[0]),
-                                                  axis=1)
-                    chr_merged = np.concatenate((element2[1], element1[1]),
-                                                axis=0)
+                    concatMatrix = np.array([element2[0], element1[0]], dtype=np.float32)
+                    chr_merged = np.array([element2[1], element1[1]], dtype=np.int32)
                     pairs_labels.append(0)
                 else:
-                    concatMatrix = np.concatenate((element1[0], element2[0]),
-                                                  axis=1)
-                    chr_merged = np.concatenate((element1[1], element2[1]),
-                                                axis=0)
+                    concatMatrix = np.array([element1[0], element2[0]], dtype=np.float32)
+                    chr_merged = np.array([element1[1], element2[1]], dtype=np.int32)
                     pairs_labels.append(1)
 
             # Add word and char level information

@@ -71,9 +71,9 @@ convolutional layer \citep{cnn1998}, further referred as CNN, and a fully connec
 layer with a softmax layer at the end for predicting class probabilities.
 
 The whole pipeline was built using the open source frameworks
-\emph{TensorFlow}\footnote{\texttt{https://www.tensorflow.org/}} \citep{tensorflow2015}
+\emph{TensorFlow} \footnote{\texttt{https://www.tensorflow.org/}} \citep{tensorflow2015}
 and
-\emph{scikit-learn}\footnote{\texttt{http://scikit-learn.org/stable/index.html}} \citep{scikit-learn}.
+\emph{scikit-learn} \footnote{\texttt{http://scikit-learn.org/stable/index.html}} \citep{scikit-learn}.
 
 \subsection{Recurrent Neural Networks}
 
@@ -118,8 +118,7 @@ for predicting classes.
 
 \subsubsection{Bi-LSTM network}
 Our second model is a pure bi-directional recurrent model with LSTM cells. As
-input features we use $100$ dimensional \emph{GloVe}
-\citep{GLove}\footnote{\texttt{https://nlp.stanford.edu/projects/glove/}}vectors trained on the $27B$
+input features we use $100$ dimensional \emph{GloVe} \footnote{\texttt{https://nlp.stanford.edu/projects/glove/}} \citep{glove2014} vectors trained on the $27B$
 Twitter dataset. Fully connected and softmax layers are also placed at the
 networks end.
 

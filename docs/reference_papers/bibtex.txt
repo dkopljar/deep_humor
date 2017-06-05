@@ -1,0 +1,58 @@
+@article{potash2016hashtagwars,
+  title={\# HashtagWars: Learning a Sense of Humor},
+  author={Potash, Peter and Romanov, Alexey and Rumshisky, Anna},
+  journal={arXiv preprint arXiv:1612.03216},
+  year={2016}
+}
+
+@inproceedings{bertero2016long,
+  title={A long short-term memory framework for predicting humor in dialogues},
+  author={Bertero, Dario and Fung, Pascale},
+  booktitle={Proceedings of NAACL-HLT},
+  pages={130--135},
+  year={2016}
+}
+
+@inproceedings{raz2012automatic,
+  title={Automatic humor classification on Twitter},
+  author={Raz, Yishay},
+  booktitle={Proceedings of the 2012 Conference of the North American Chapter of the Association for Computational Linguistics: Human Language Technologies: Student Research Workshop},
+  pages={66--70},
+  year={2012},
+  organization={Association for Computational Linguistics}
+}
+
+@article{hochreiter1997long,
+  title={Long short-term memory},
+  author={Hochreiter, Sepp and Schmidhuber, J{\"u}rgen},
+  journal={Neural computation},
+  volume={9},
+  number={8},
+  pages={1735--1780},
+  year={1997},
+  publisher={MIT Press}
+}
+
+@article{lecun1995convolutional,
+  title={Convolutional networks for images, speech, and time series},
+  author={LeCun, Yann and Bengio, Yoshua and others},
+  journal={The handbook of brain theory and neural networks},
+  volume={3361},
+  number={10},
+  pages={1995},
+  year={1995}
+}
+
+@article{ma2016end,
+  title={End-to-end sequence labeling via bi-directional lstm-cnns-crf},
+  author={Ma, Xuezhe and Hovy, Eduard},
+  journal={arXiv preprint arXiv:1603.01354},
+  year={2016}
+}
+
+@article{kingma2014adam,
+  title={Adam: A method for stochastic optimization},
+  author={Kingma, Diederik and Ba, Jimmy},
+  journal={arXiv preprint arXiv:1412.6980},
+  year={2014}
+}

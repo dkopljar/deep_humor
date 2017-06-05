@@ -43,9 +43,9 @@ for which it yields outstanding results.
 Understanding humor expressed in the text is a challenging natural language problem which has not yet been addressed extensively in the current AI research. Humor is often subjective and relies on the vast knowledge base, which is sometimes hard to reason, even for humans. It is also important to say that what is humorous today might not be humorous tomorrow due to the fact that humor can be trend dependent.
 
 In this paper, we describe a system for humor detection and
-ranking. Our system is designed to solve two tasks. For the first task, the
+ranking. Our system is designed to solve two tasks. For the first task, further referred as task A, the
 system is given two tweets and it should predict the funnier tweet.
-For the second task, the system is given a set of tweets and it should rank them
+For the second task, further referred as task B, the system is given a set of tweets and it should rank them
 in three categories (2 for the most humorous tweet, 1 for top ten humorous
 tweets, and 0 otherwise). To learn and test our model we used a novel dataset that was
 given in SemEval-2017 Task 6 \citep{potash2016hashtagwars}. The dataset consists of
@@ -143,8 +143,9 @@ In this paper, we trained and evaluated models on the dataset that was created
 from tweets of viewers who watched TV show @midnight. As part of this "game-show"
 viewers were asked to write a humorous message about a topic that was announced
 in the show. The day of the ensuing episode, @midnight would create a post that
-announced the top-10 tweets from the previous episode. The whole dataset consists
-of $11,685$ tweets about 106 different topics. Every tweet in the dataset is
+announced the top-10 tweets from the previous episode.
+
+The whole dataset consists of $11,685$ tweets about 106 different topics. Every tweet in the dataset is
 labeled with one of the three labels. Label $2$ indicates the winning tweet, label 1
 a top 10 tweet, and label 0 is intended for all other
 tweets. A number of tweets per topic varies among different topics, but $71\%$ of
@@ -153,6 +154,9 @@ around 20 tweets, and topics with the highest number of tweets have around 180 t
 It is also important to note that for some topics like \emph{FastFoodBooks} external
 knowledge is required to understand the joke, while for others like
 \emph{IfIWerePresident} it isn't.
+
+Since given dataset was part of a competition with two tasks, we decided to tackle both of them with single base model.
+For the task A, we have implemented system which on its input accepts two tweets and predicts which tweet of the given two is more humorous. For the task B we used the same model in voting manner. More specifically, we created all possible pairs of all tweets for given hashtag and fed them to the described system. Then we counted how many times a tweet was more humorous than other tweets, and ranked the tweets by that number.
 
 \section{Experiments}
 We divide this section into two parts: the former one reporting results on the non-evaluation data, and the latter results on the official evaluation data.
@@ -225,14 +229,14 @@ Table \ref{tab:task_a_official} and Table \ref{tab:task_b_official} are
 defined by the task organizers \citep{potash2016hashtagwars}.
 
 \begin{table}
-  \caption{Official Task A results in comparison with our model}
+  \caption{Official Task A results in comparison with our Bi-LSTM model}
  \label{tab:task_a_official}
  \begin{center}
  \begin{tabular}{ll}
  \toprule
      Team & Accuracy\\
  \midrule
-     \textbf{Bi-LSTM} & 69.1 \\
+     \textbf{EuroNeuro} & \textbf{69.1} \\
      HumorHawk & 67.5 \\
      TakeLab & 64.1\\
      HumorHawk & 63.7\\
@@ -244,7 +248,7 @@ defined by the task organizers \citep{potash2016hashtagwars}.
 \end{table}
 
 \begin{table}
-    \caption{Official Task B results in comparison with our model (lower is
+    \caption{Official Task B results in comparison with our Bi-LSTM model (lower is
     better)}
  \label{tab:task_b_official}
  \begin{center}
@@ -253,7 +257,7 @@ defined by the task organizers \citep{potash2016hashtagwars}.
      Team & Distance\\
  \midrule
      Duluth & 0.872 \\
-     \textbf{Bi-LSTM} & 0.881 \\
+     \textbf{EuroNeuro} & \textbf{0.881} \\
      TakLab & 0.908\\
      QUB & 0.924\\
      QUB & 0.924\\

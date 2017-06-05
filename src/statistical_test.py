@@ -36,16 +36,6 @@ class StatisticalTest:
         mean = np.mean(interval)
         return str("{:.3f} +- {:.5f}".format(mean, interval[1] - mean))
 
-    def p_test(self, test2, p_value=0.05):
-        """str(mean)
-        Does a statistical p test for the given StatisticalTest object.
-        Compares all metrics.
-        :param test2: StatisticalTest object to compare with
-        :return: List of bool values for each metric. True if the test is
-        the hypothesis is accepted, False otherwise
-        """
-        pass
-
 
 if __name__ == "__main__":
     files = os.listdir(constants.LOGS)

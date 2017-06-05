@@ -6,7 +6,7 @@ import re
 import nltk
 import numpy as np
 
-import char_mapper
+import constants
 
 
 def clear_tweet(tweet):
@@ -46,7 +46,7 @@ def tweet_to_integer_vector(tweet, max_word_size, timestep):
 
         # Zeroes are used as a padding
         char_embeddings = np.zeros(max_word_size, dtype=np.uint8)
-        char_mapped = np.array([char_mapper.map_letter_to_int(c) for c in token])
+        char_mapped = np.array([constants.map_letter_to_int(c) for c in token])
 
         if len(char_mapped) > max_word_size:
             char_embeddings = char_mapped[:max_word_size]

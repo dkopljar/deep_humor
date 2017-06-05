@@ -12,7 +12,7 @@
 \usepackage{amsmath}
 \usepackage{amssymb}
 
-\title{Humor Detection and Ranking}
+\title{}
 
 \name{Bartol Freškura, Filip Gulan, Damir Kopljar}
 
@@ -25,13 +25,13 @@ Unska 3, 10000 Zagreb, Croatia\\
 \abstract{ 
 In this paper, we consider the task of comparative humor ranking in two manner:
 detecting which tweet of two is more humorous and ranking the given tweets by how
-humorous they are in three classes. We opted for different approaches based on
+humorous they are in three classes. We opted for a different approache based on
 recent deep neural models in order to eschew manual feature engineering. In
-evaluation section we experimented with the bi-directional LSTMs and CNNs, in
+evaluation section we experimented with the bi-directional LSTM and CNN, in
 combination and separately. For constructing feature vectors we used
-pre-trained Twitter \emph{GloVe} word embeddings along with trained character
+pre-trained Twitter \emph{GloVe} word embeddings along with learned character
 embedding. The system was trained, tuned, and evaluated on the SemEval-2017 Task 6 dataset
-for which it yields outstanding results.
+for which it yields comparative results.
 }
 
 \begin{document}
@@ -40,42 +40,67 @@ for which it yields outstanding results.
 
 \section{Introduction}
 
-Understanding humor expressed in the text is a challenging natural language problem which has not yet been addressed extensively in the current AI research. Humor is often subjective and relies on the vast knowledge base, which is sometimes hard to reason, even for humans. It is also important to say that what is humorous today might not be humorous tomorrow due to the fact that humor can be trend dependent.
+Understanding humor expressed in text is a challenging Natural Language 
+Problem (NLP) which has not yet been addressed extensively in the current AI research.
+Humor is often subjective and relies on the vast knowledge base which is sometimes
+hard to reason even for humans. It is also important to note that what is humorous
+today might not be humorous tomorrow due to the fact that humor can be trend dependent.
 
-In this paper, we describe a system for humor detection and
+In this paper, we describe a system for humor comparison and
 ranking. Our system is designed to solve two tasks. For the first task, the
-system is given two tweets and it should predict the funnier tweet.
+system is given two tweets and with a goal of predicting the funnier tweet.
 For the second task, the system is given a set of tweets and it should rank them
-in three categories (2 for the most humorous tweet, 1 for top ten humorous
+in three categories (2 for the most humorous tweet, 1 if the tweet is in the top ten humorous
 tweets, and 0 otherwise). To learn and test our model we used a novel dataset that was
-given in SemEval-2017 Task 6 \citep{potash2016hashtagwars}. The dataset consists of
-the tweets that viewers sent as a part of the Comedy Central show @midnight. For every
+created as a part of the SemEval-2017 Task 6 \citep{potash2016hashtagwars}. The dataset consists of
+the tweets viewers sent as a part of the Comedy Central show
+@midnight\footnote{\texttt{http://www.cc.com/shows/-midnight}}. For every
 episode, topic was defined and viewers were asked to send humorous
 tweets on the given topic.
 
 \section{Related Work}
 
-In the last few years there were a lot of approaches in humor detection \citep{mihalcea2005,reyes2013,zhang2014,barbieri2014,yang2015}.
+In the last few years there were many approaches in humor detection \citep{mihalcea2005,reyes2013,zhang2014,barbieri2014,yang2015}.
 Some of those works \citep{reyes2013,zhang2014,barbieri2014} have also acquired
 humor dataset from Twitter. Most of the related works separate the apprehension 
 of humor into two groups: humor and non-humor, basically a binary classification.
 This representation ignores the continuous nature of humor, while also not accounting
 for the subjectivity in perceiving humor \citep{potash2016hashtagwars}.
 
-SemEval-2017 Task 6 has finished in February, 2017 and most of the top-ranked participants \citep{humorhawk2017,takelab2017,datastories2017} published their work describing used techniques and models.
+SemEval-2017 Task 6 has finished in February 2017 and most of the top-ranked
+participants \citep{humorhawk2017,takelab2017,datastories2017} published their
+work describing used techniques and models.
 
-Donahue et al. with \emph{HumorHawk} team have won the contest on Task A (no data available for Task B). Their system utilizes recurrent deep learning methods with dense embeddings. They used \emph{GloVe} embeddings in combination with a novel phonetic representation which is used as input to LSTM. After LSTM, they have stacked character-based CNN model, and an XGBoost \citep{XGBoost2016} component in an ensemble model which achieves 0.675 accuracy on the evaluation data for the Task A.
+Donahue et al. with \emph{HumorHawk} team have won the contest on Task A 
+(no data available for Task B). Their system utilizes recurrent deep learning
+methods with dense embeddings. They used \emph{GloVe} embeddings in combination
+with a novel phonetic representation which is used as input to LSTM. After LSTM,
+they have stacked character-based CNN model, and an XGBoost \citep{XGBoost2016}
+component in an ensemble model which achieves $0.675$ accuracy on the evaluation data for the Task A.
 
-Kukova\v{c}ec et al. with \emph{TakeLab} team have participated on both tasks, A and B, and have won the second place on both of them. Unlike the other two teams \citep{humorhawk2017,datastories2017}, which used deep-learning models with automatic feature extraction, they used a manually handcrafted rich set of features:  cultural reference features, binary and count-based features, readability-based features, humor-specific features and sentiment-based features. As a classifier they used gradient boosting model which achieves 0.641 accuracy on the evaluation data for the Task A, and distance of 0.908 on Task B evaluation data (lower is better, starting from 1).
+Kukova\v{c}ec et al. with \emph{TakeLab} team have participated in both A and B tasks
+and have won the second place in both of them. Unlike the other two
+teams \citep{humorhawk2017,datastories2017} who used deep learning models
+with automatic feature extraction, they used a manually handcrafted rich set
+of features:  cultural reference features, binary and count-based features,
+readability-based features, humor-specific features and sentiment-based features.
+As a classifier they used gradient boosting model which achieves $0.641$ accuracy
+on the evaluation data for the Task A, and a distance of $0.908$ on the Task B
+evaluation data (lower is better with a worst score equal to $1$).
 
-Baziotis et al. with \emph{DataStories} team have won the third place on Task A (no data available for Task B). For their system they have used Siamese architecture \citep{siamese1993} with bidirectional LSTMs, augmented with an attention mechanism. Their model leverage word embeddings trained on big collection of unlabeled Twitter messages. Their system achieves 0.632 accuracy on the evaluation data for the Task A.
+Baziotis et al. with \emph{DataStories} team have won the third place on Task A
+(no data available for Task B). They used a Siamese
+architecture \citep{siamese1993} with bi-directional LSTMs, augmented with an
+attention mechanism. Their model leverages word embeddings trained on a huge collection
+of unlabeled Twitter messages. The system achieves $0.632$ accuracy on the Task
+A evaluation data.
 
 \section{Architecture}
 
 In this section, we describe the architecture of our system. Our most complex
 architecture consists of the bi-directional
-\emph{Long Short Term Memory} \citep{lstm1997} layer, further referred as Bi-LSTM,
-convolutional layer \citep{cnn1998}, further referred as CNN, and a fully connected
+\emph{Long Short Term Memory} \citep{lstm1997} layer, further referred as the Bi-LSTM,
+a convolutional layer \citep{cnn1998}, further referred as the CNN, and a fully connected
 layer with a softmax layer at the end for predicting class probabilities.
 
 The whole pipeline was built using the open source frameworks
@@ -117,6 +142,8 @@ characters in the corpus.
 \end{figure}
 
 \subsection{Used models}
+To test how every architecture handles humor detection we have created three
+models based on the following architectures: CNN, Bi-LSTM, and a combination of the former two.
 
 \subsubsection{CNN network}
 Previous work \citep{potash2016hashtagwars} has demonstrated that CNN are top performers
@@ -133,23 +160,26 @@ networks end.
 
 \subsubsection{CNN + Bi-LSTM network}
 To use the best of each of the convolutional and recurrent networks, we
-construct a merged network consisting of the word embedding, CNN, Bi-LSTM, and
+construct a merged network consisting of word embeddings, CNN, Bi-LSTM, and
 a fully connected layer. We hope this network can capture inter word relations
 using the Bi-LSTM module as well as the inter character features with the CNN
 layer.
 
 \section{Dataset}
-In this paper, we trained and evaluated models on the dataset that was created
-from tweets of viewers who watched TV show @midnight. As part of this "game-show"
+We trained and evaluated models on the dataset that was created
+from tweets of viewers who watched TV show @midnight. As part of this
+\emph{game-show}
 viewers were asked to write a humorous message about a topic that was announced
 in the show. The day of the ensuing episode, @midnight would create a post that
 announced the top-10 tweets from the previous episode. The whole dataset consists
-of $11,685$ tweets about 106 different topics. Every tweet in the dataset is
-labeled with one of the three labels. Label $2$ indicates the winning tweet, label 1
-a top 10 tweet, and label 0 is intended for all other
+of $11,685$ tweets about $106$ different topics. Every tweet in the dataset is
+labeled with one of the three labels. Label $2$ indicates the winning tweet,
+label $1$
+a top-10 tweet, and label $0$ is intended for all other
 tweets. A number of tweets per topic varies among different topics, but $71\%$ of
 topics contain at least $90$ tweets. Topics with the lowest number of tweets have 
-around 20 tweets, and topics with the highest number of tweets have around 180 tweets.
+around $20$ tweets, and topics with the highest number of tweets have around
+$180$ tweets.
 It is also important to note that for some topics like \emph{FastFoodBooks} external
 knowledge is required to understand the joke, while for others like
 \emph{IfIWerePresident} it isn't.
